@@ -10,6 +10,7 @@ import com.proj.authservice.Service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -45,9 +46,26 @@ public class UserController {
         LoginResponse loginResponse = userService.loginUser(loginRequest);
         return ResponseEntity.ok(loginResponse);
     }
-//    @GetMapping("/get")
-//    public ResponseEntity<?> getUser() {
+
+    @GetMapping("/get")
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    public ResponseEntity<?> get(){
+       // LoginResponse loginResponse = userService.loginUser(loginRequest);
+        return ResponseEntity.ok("you are hr");
+    }
+//    public void register(String email, Long issuedById) {
+//        User issuedBy = userRepository.findById(issuedById).orElseThrow();
 //
-//        return ResponseEntity.ok("user get successfully");
+//        RegistrationToken token = new RegistrationToken();
+//        token.setToken(UUID.randomUUID().toString()); // 创建一个新的UUID作为令牌
+//        token.setEmail(email);
+//        token.setIssuedBy(issuedBy);
+//        token.setExpiryDate(OffsetDateTime.now().plusDays(1)); // 设置令牌过期时间
+//
+//        registrationTokenRepository.save(token);
+//
+//        String tokenLink = "http://your-app.com/register?token=" + token.getToken(); // 创建令牌链接，你需要替换为你的应用的实际URL
+//        emailService.sendEmail(email, "Registration", "Click this link to register: " + tokenLink); // 发送邮件
 //    }
+
 }

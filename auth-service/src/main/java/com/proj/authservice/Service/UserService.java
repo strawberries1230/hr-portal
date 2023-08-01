@@ -13,6 +13,9 @@ import com.proj.authservice.Model.Entity.UserRole;
 import com.proj.authservice.Model.Entity.UserRoleKey;
 import com.proj.authservice.Model.Request.LoginRequest;
 import com.proj.authservice.Model.Request.LoginResponse;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +41,8 @@ public class UserService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
 
+
+
     public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, RoleRepository roleRepository, UserRoleRepository userRoleRepository, JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
@@ -47,19 +53,31 @@ public class UserService {
     }
 
     public LoginResponse loginUser(LoginRequest loginRequest) throws InvalidCredentialsException {
+        try {
+            // Try to authenticate the user
+            Authentication auth = new UsernamePasswordAuthenticationToken(
+                    loginRequest.getUsername(), loginRequest.getPassword()
+            );
+            Authentication authenticated = authenticationManager.authenticate(auth);
+            // If authentication is successful, generate a token
+            UserDetails userDetails = (UserDetails) authenticated.getPrincipal();
+            Collection<String> roles = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+            System.out.println("roles: "+ roles);
+           String token = jwtUtil.generateToken(userDetails, roles);
+//            Claims claims = Jwts.parserBuilder()
+//                    .setSigningKey(secret)
+//                    .build()
+//                    .parseClaimsJws(token)
+//                    .getBody();
+//            List<String> tokenRoles = claims.get("roles", List.class);
+//            System.out.println("Token roles: " + tokenRoles);
 
-        // Try to authenticate the user
-        Authentication auth = new UsernamePasswordAuthenticationToken(
-                loginRequest.getUsername(), loginRequest.getPassword()
-        );
-        Authentication authenticated = authenticationManager.authenticate(auth);
-        // If authentication is successful, generate a token
-        UserDetails userDetails = (UserDetails) authenticated.getPrincipal();
-        Collection<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-        String token = jwtUtil.generateToken(userDetails, roles);
-        return new LoginResponse(token);
+            return new LoginResponse(token);
+        } catch (Exception e) {
+            throw new InvalidCredentialsException("Invalid credentials provided.");
+        }
 
     }
 
@@ -94,5 +112,9 @@ public class UserService {
         userRole.setRole(role);
 
         userRoleRepository.save(userRole);
+        // 新增日志输出，确认关联关系是否正确
+        System.out.println("Saved User: " + newUser.getUsername());
+        System.out.println("Saved UserRole: " + userRole.getUser().getUsername() + " - " + userRole.getRole().getRoleName());
+
     }
 }

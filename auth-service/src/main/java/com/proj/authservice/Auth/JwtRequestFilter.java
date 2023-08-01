@@ -42,11 +42,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     } catch (UsernameNotFoundException e) {
                         //System.out.println("Username not found: " + username);
                         // Log the error
+
                         logger.error("User not found: " + username, e);
                         // Return an error response
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.getWriter().write("Invalid credentials");
+
                         return;
+
                     }
                 }
             } catch (Exception e) {

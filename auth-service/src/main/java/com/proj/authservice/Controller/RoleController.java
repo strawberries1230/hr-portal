@@ -15,21 +15,21 @@ import java.util.Date;
 @RestController
 @RequestMapping("/api/role")
 public class RoleController {
-//    private final RoleRepository roleRepository;
-//
-//    @Autowired
-//    public RoleController(RoleRepository roleRepository) {
-//        this.roleRepository = roleRepository;
-//    }
+    private final RoleRepository roleRepository;
+
+    @Autowired
+    public RoleController(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
+    }
 
     @GetMapping("/create")
     public ResponseEntity<?> createRole() {
-//        Role newRole = new Role();
-//        newRole.setRoleName("EMPLOYEE");
-//        newRole.setRoleDescription("employee, basic permission");
-//        newRole.setCreateDate(new Date());
-//        newRole.setLastModificationDate(new Date());
-//        roleRepository.save(newRole);
+        Role newRole = new Role();
+        newRole.setRoleName("EMPLOYEE");
+        newRole.setRoleDescription("employee, basic permission");
+        newRole.setCreateDate(new Date());
+        newRole.setLastModificationDate(new Date());
+        roleRepository.save(newRole);
         return ResponseEntity.ok("role saved successfully");
     }
 }

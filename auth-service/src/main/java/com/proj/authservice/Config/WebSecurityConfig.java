@@ -53,7 +53,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager() throws Exception {
+    public AuthenticationManager authenticationManager() throws InvalidCredentialsException {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider() {
             @Override
             protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws InvalidCredentialsException {
