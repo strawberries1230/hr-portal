@@ -1,35 +1,28 @@
 package com.proj.authservice.Service;
 
 import com.proj.authservice.Auth.JwtUtil;
+import com.proj.authservice.Dao.RegistrationTokenRepository;
 import com.proj.authservice.Dao.RoleRepository;
 import com.proj.authservice.Dao.UserRepository;
 import com.proj.authservice.Dao.UserRoleRepository;
 import com.proj.authservice.Exception.AlreadyExistsException;
+import com.proj.authservice.Exception.EmailNotFoundException;
 import com.proj.authservice.Exception.InvalidCredentialsException;
+import com.proj.authservice.Exception.UserNotFoundException;
 import com.proj.authservice.Model.DTO.UserDTO;
-import com.proj.authservice.Model.Entity.Role;
-import com.proj.authservice.Model.Entity.User;
-import com.proj.authservice.Model.Entity.UserRole;
-import com.proj.authservice.Model.Entity.UserRoleKey;
+import com.proj.authservice.Model.Entity.*;
 import com.proj.authservice.Model.Request.LoginRequest;
 import com.proj.authservice.Model.Request.LoginResponse;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.time.OffsetDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,16 +31,18 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
+    private final RegistrationTokenRepository registrationTokenRepository;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
 
 
 
-    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, RoleRepository roleRepository, UserRoleRepository userRoleRepository, JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
+    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, RoleRepository roleRepository, UserRoleRepository userRoleRepository, RegistrationTokenRepository registrationTokenRepository, JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userRoleRepository = userRoleRepository;
+        this.registrationTokenRepository = registrationTokenRepository;
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
     }
@@ -113,8 +108,25 @@ public class UserService {
 
         userRoleRepository.save(userRole);
         // 新增日志输出，确认关联关系是否正确
-        System.out.println("Saved User: " + newUser.getUsername());
-        System.out.println("Saved UserRole: " + userRole.getUser().getUsername() + " - " + userRole.getRole().getRoleName());
+//        System.out.println("Saved User: " + newUser.getUsername());
+//        System.out.println("Saved UserRole: " + userRole.getUser().getUsername() + " - " + userRole.getRole().getRoleName());
 
     }
+    public void generateRegistrationLink(String username, String email) throws UserNotFoundException, EmailNotFoundException {
+
+        User issuedByUser = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+        User newEmployee = userRepository.findByEmail(email).orElseThrow(() -> new EmailNotFoundException("User not found with email: " + email));
+
+        RegistrationToken registrationToken = new RegistrationToken();
+        registrationToken.setToken(UUID.randomUUID().toString());
+        registrationToken.setNewEmployee(newEmployee);
+        registrationToken.setIssuedByUser(issuedByUser);
+
+        OffsetDateTime offsetDateTime = OffsetDateTime.now().plusDays(7);
+        Date expirationDate = Date.from(offsetDateTime.toInstant());
+
+        registrationToken.setExpirationDate(expirationDate);
+        registrationTokenRepository.save(registrationToken);
+    }
+
 }

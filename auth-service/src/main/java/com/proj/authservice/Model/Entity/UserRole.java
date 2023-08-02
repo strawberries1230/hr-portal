@@ -26,7 +26,7 @@ public class UserRole {
     @JsonIdentityReference(alwaysAsId = true)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("roleId")
     @JoinColumn(name = "roleId")
     @JsonIdentityReference(alwaysAsId = true)

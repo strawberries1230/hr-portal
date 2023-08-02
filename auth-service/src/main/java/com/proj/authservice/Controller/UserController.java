@@ -2,21 +2,27 @@ package com.proj.authservice.Controller;
 
 import com.proj.authservice.Auth.JwtUtil;
 import com.proj.authservice.Exception.AlreadyExistsException;
+import com.proj.authservice.Exception.EmailNotFoundException;
 import com.proj.authservice.Exception.InvalidCredentialsException;
+import com.proj.authservice.Exception.UserNotFoundException;
 import com.proj.authservice.Model.DTO.UserDTO;
 import com.proj.authservice.Model.Request.LoginRequest;
 import com.proj.authservice.Model.Request.LoginResponse;
 import com.proj.authservice.Service.UserService;
+import com.proj.authservice.Util.EmailValidator;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -46,26 +52,24 @@ public class UserController {
         LoginResponse loginResponse = userService.loginUser(loginRequest);
         return ResponseEntity.ok(loginResponse);
     }
-
-    @GetMapping("/get")
-    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
-    public ResponseEntity<?> get(){
-       // LoginResponse loginResponse = userService.loginUser(loginRequest);
-        return ResponseEntity.ok("you are hr");
+    @PreAuthorize("hasRole('ROLE_HR')")
+    @GetMapping
+    public String accessSecureEndpoint() {
+        return "You have access to this secure endpoint as HR";
     }
-//    public void register(String email, Long issuedById) {
-//        User issuedBy = userRepository.findById(issuedById).orElseThrow();
-//
-//        RegistrationToken token = new RegistrationToken();
-//        token.setToken(UUID.randomUUID().toString()); // 创建一个新的UUID作为令牌
-//        token.setEmail(email);
-//        token.setIssuedBy(issuedBy);
-//        token.setExpiryDate(OffsetDateTime.now().plusDays(1)); // 设置令牌过期时间
-//
-//        registrationTokenRepository.save(token);
-//
-//        String tokenLink = "http://your-app.com/register?token=" + token.getToken(); // 创建令牌链接，你需要替换为你的应用的实际URL
-//        emailService.sendEmail(email, "Registration", "Click this link to register: " + tokenLink); // 发送邮件
-//    }
+    @PreAuthorize("hasRole('ROLE_HR')")
+    @PostMapping("/generate-link/{email}")
+    public ResponseEntity<?> generateRegistrationLink(@PathVariable("email") String email) throws UserNotFoundException, EmailNotFoundException {
+        if(!EmailValidator.validate(email)) {
+            return ResponseEntity.badRequest().body("Invalid email address!");
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        userService.generateRegistrationLink(username, email);
+
+
+        return ResponseEntity.ok("You have successfully sent the registration link to " + email);
+    }
+
 
 }

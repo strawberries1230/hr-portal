@@ -38,7 +38,7 @@ public class User {
     @Column(nullable = false)
     private boolean activeFlag;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIdentityReference(alwaysAsId = true)
     private Set<UserRole> userRoles;
 

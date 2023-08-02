@@ -1,5 +1,8 @@
 package com.proj.authservice.Model.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,20 +14,27 @@ import java.util.Date;
 @Table(name = "RegistrationToken")
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "tokenId")
 public class RegistrationToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long tokenId;
     @Column(nullable = false)
     private String token;
-    @Column(name = "issuedBy")
-    private String issuedBy;
-    @Column(nullable = false)
-    private String email;
+//    @Column(nullable = false)
+//    private String email;
+    @ManyToOne
+    @JoinColumn(name = "email", referencedColumnName="email")
+    @JsonIdentityReference(alwaysAsId = true)
+    private User newEmployee;
     @Column(nullable = false)
     private Date expirationDate;
+
     @ManyToOne
-    @JoinColumn(name = "issuedBy", referencedColumnName="username", insertable = false, updatable = false)
+    @JoinColumn(name = "issuedBy", referencedColumnName="username")
+    @JsonIdentityReference(alwaysAsId = true)
     private User issuedByUser;
 
     public Long getTokenId() {
@@ -43,20 +53,12 @@ public class RegistrationToken {
         this.token = token;
     }
 
-    public String getIssuedBy() {
-        return issuedBy;
+    public User getNewEmployee() {
+        return newEmployee;
     }
 
-    public void setIssuedBy(String issuedBy) {
-        this.issuedBy = issuedBy;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+    public void setNewEmployee(User newEmployee) {
+        this.newEmployee = newEmployee;
     }
 
     public Date getExpirationDate() {

@@ -1,9 +1,11 @@
 package com.proj.authservice.Auth;
 
+import com.proj.authservice.Model.Entity.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.hibernate.Hibernate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,6 +36,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     try {
                         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                        System.out.println("UserDetails: " + userDetails);
+
                         if (jwtUtil.validateToken(token, userDetails)) {
                             Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
                                     userDetails.getAuthorities());
@@ -47,6 +51,18 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                         // Return an error response
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.getWriter().write("Invalid credentials");
+
+                        return;
+
+                    }
+                    catch (Exception e) {
+                        //System.out.println("Username not found: " + username);
+                        // Log the error
+
+                        logger.error(e.getMessage());
+                        // Return an error response
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.getWriter().write(e.getMessage());
 
                         return;
 
