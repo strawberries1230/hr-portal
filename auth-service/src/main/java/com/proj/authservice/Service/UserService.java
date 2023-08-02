@@ -33,7 +33,6 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
 
 
-
     public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, RoleRepository roleRepository, UserRoleRepository userRoleRepository, RegistrationTokenRepository registrationTokenRepository, JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
@@ -56,15 +55,8 @@ public class UserService {
             Collection<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
-            System.out.println("roles: "+ roles);
-           String token = jwtUtil.generateToken(userDetails, roles);
-//            Claims claims = Jwts.parserBuilder()
-//                    .setSigningKey(secret)
-//                    .build()
-//                    .parseClaimsJws(token)
-//                    .getBody();
-//            List<String> tokenRoles = claims.get("roles", List.class);
-//            System.out.println("Token roles: " + tokenRoles);
+            System.out.println("roles: " + roles);
+            String token = jwtUtil.generateToken(userDetails, roles);
 
             return new LoginResponse(token);
         } catch (Exception e) {
@@ -104,11 +96,8 @@ public class UserService {
         userRole.setRole(role);
 
         userRoleRepository.save(userRole);
-        // 新增日志输出，确认关联关系是否正确
-//        System.out.println("Saved User: " + newUser.getUsername());
-//        System.out.println("Saved UserRole: " + userRole.getUser().getUsername() + " - " + userRole.getRole().getRoleName());
-
     }
+
     public void generateRegistrationLink(String username, String email) throws UserNotFoundException {
 
         User issuedByUser = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
@@ -126,10 +115,11 @@ public class UserService {
         registrationToken.setExpirationDate(expirationDate);
         registrationTokenRepository.save(registrationToken);
     }
+
     public void checkToken(String email, String token) throws TokenNotFoundException, TokenExpiredException {
         RegistrationToken registrationToken = registrationTokenRepository.findByEmailAndToken(email, token).orElseThrow(() -> new TokenNotFoundException("Token Not Found."));
         Date expirationDate = registrationToken.getExpirationDate();
-        if(expirationDate.before(new Date())) {
+        if (expirationDate.before(new Date())) {
             throw new TokenExpiredException("Token has expired.");
         }
     }

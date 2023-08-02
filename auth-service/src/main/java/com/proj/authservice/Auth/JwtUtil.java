@@ -19,7 +19,8 @@ public class JwtUtil {
 
     @Value("${jwt.expiration}")
     private long expiration;
-    public  String generateToken(UserDetails userDetails, Collection<String> roles) {
+
+    public String generateToken(UserDetails userDetails, Collection<String> roles) {
         return Jwts.builder()
                 .claim("roles", roles)
                 .setSubject(userDetails.getUsername())
@@ -28,6 +29,7 @@ public class JwtUtil {
                 .signWith(SignatureAlgorithm.HS512, secret)
                 .compact();
     }
+
     public String extractToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
@@ -43,9 +45,11 @@ public class JwtUtil {
     public String extractUsername(String token) {
         return extractClaims(token).getSubject();
     }
+
     public Date extractExpiration(String token) {
         return extractClaims(token).getExpiration();
     }
+
     private boolean isTokenExpired(String token) {
         Date expiration = extractExpiration(token);
         return expiration.before(new Date());
