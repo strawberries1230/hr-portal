@@ -41,4 +41,12 @@ public class GlobalExceptionHandler {
         body.put("timestamp", LocalDateTime.now());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(value = FailtoRegisterException.class)
+    public ResponseEntity<?> handleFailtoRegisterException(FailtoRegisterException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        body.put("timestamp", LocalDateTime.now());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
 }

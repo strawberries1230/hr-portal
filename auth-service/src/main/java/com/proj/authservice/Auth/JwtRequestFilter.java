@@ -26,6 +26,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
     }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = jwtUtil.extractToken(request);
@@ -44,7 +45,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                             SecurityContextHolder.getContext().setAuthentication(authentication);
                         }
                     } catch (UsernameNotFoundException e) {
-                        //System.out.println("Username not found: " + username);
                         // Log the error
 
                         logger.error("User not found: " + username, e);
@@ -54,9 +54,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
                         return;
 
-                    }
-                    catch (Exception e) {
-                        //System.out.println("Username not found: " + username);
+                    } catch (Exception e) {
                         // Log the error
 
                         logger.error(e.getMessage());
@@ -65,7 +63,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                         response.getWriter().write(e.getMessage());
 
                         return;
-
                     }
                 }
             } catch (Exception e) {

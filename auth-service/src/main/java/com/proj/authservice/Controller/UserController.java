@@ -1,10 +1,7 @@
 package com.proj.authservice.Controller;
 
 import com.proj.authservice.Auth.JwtUtil;
-import com.proj.authservice.Exception.AlreadyExistsException;
-import com.proj.authservice.Exception.EmailNotFoundException;
-import com.proj.authservice.Exception.InvalidCredentialsException;
-import com.proj.authservice.Exception.UserNotFoundException;
+import com.proj.authservice.Exception.*;
 import com.proj.authservice.Model.DTO.UserDTO;
 import com.proj.authservice.Model.Request.LoginRequest;
 import com.proj.authservice.Model.Request.LoginResponse;
@@ -39,10 +36,24 @@ public class UserController {
 
     }
 
+//    @PostMapping("/register")
+//    public ResponseEntity<?> registerUser(@Valid @RequestBody UserDTO userDTO, BindingResult bindingResult) throws AlreadyExistsException {
+//        if (bindingResult.hasErrors()) {
+//            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
+//        }
+//        userService.registerUser(userDTO);
+//        return ResponseEntity.ok("user registered successfully");
+//    }
+
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody UserDTO userDTO, BindingResult bindingResult) throws AlreadyExistsException {
+    public ResponseEntity<?> registerUser(@RequestParam("token") String token, @Valid @RequestBody UserDTO userDTO, BindingResult bindingResult) throws AlreadyExistsException, FailtoRegisterException {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
+        }
+        try {
+            userService.checkToken(userDTO.getEmail(), token);
+        } catch (TokenNotFoundException | TokenExpiredException e) {
+            throw new FailtoRegisterException(e.getMessage());
         }
         userService.registerUser(userDTO);
         return ResponseEntity.ok("user registered successfully");
@@ -66,8 +77,6 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         userService.generateRegistrationLink(username, email);
-
-
         return ResponseEntity.ok("You have successfully sent the registration link to " + email);
     }
 

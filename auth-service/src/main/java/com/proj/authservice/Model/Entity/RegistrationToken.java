@@ -23,12 +23,12 @@ public class RegistrationToken {
     private Long tokenId;
     @Column(nullable = false)
     private String token;
-//    @Column(nullable = false)
-//    private String email;
-    @ManyToOne
-    @JoinColumn(name = "email", referencedColumnName="email")
-    @JsonIdentityReference(alwaysAsId = true)
-    private User newEmployee;
+    @Column(nullable = false)
+    private String email;
+//        @ManyToOne
+//        @JoinColumn(name = "email", referencedColumnName="email")
+//        @JsonIdentityReference(alwaysAsId = true)
+//        private User newEmployee;
     @Column(nullable = false)
     private Date expirationDate;
 
@@ -53,12 +53,12 @@ public class RegistrationToken {
         this.token = token;
     }
 
-    public User getNewEmployee() {
-        return newEmployee;
+    public String getEmail() {
+        return email;
     }
 
-    public void setNewEmployee(User newEmployee) {
-        this.newEmployee = newEmployee;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public Date getExpirationDate() {

@@ -5,10 +5,7 @@ import com.proj.authservice.Dao.RegistrationTokenRepository;
 import com.proj.authservice.Dao.RoleRepository;
 import com.proj.authservice.Dao.UserRepository;
 import com.proj.authservice.Dao.UserRoleRepository;
-import com.proj.authservice.Exception.AlreadyExistsException;
-import com.proj.authservice.Exception.EmailNotFoundException;
-import com.proj.authservice.Exception.InvalidCredentialsException;
-import com.proj.authservice.Exception.UserNotFoundException;
+import com.proj.authservice.Exception.*;
 import com.proj.authservice.Model.DTO.UserDTO;
 import com.proj.authservice.Model.Entity.*;
 import com.proj.authservice.Model.Request.LoginRequest;
@@ -112,14 +109,15 @@ public class UserService {
 //        System.out.println("Saved UserRole: " + userRole.getUser().getUsername() + " - " + userRole.getRole().getRoleName());
 
     }
-    public void generateRegistrationLink(String username, String email) throws UserNotFoundException, EmailNotFoundException {
+    public void generateRegistrationLink(String username, String email) throws UserNotFoundException {
 
         User issuedByUser = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
-        User newEmployee = userRepository.findByEmail(email).orElseThrow(() -> new EmailNotFoundException("User not found with email: " + email));
+        //User newEmployee = userRepository.findByEmail(email).orElseThrow(() -> new EmailNotFoundException("User not found with email: " + email));
 
         RegistrationToken registrationToken = new RegistrationToken();
         registrationToken.setToken(UUID.randomUUID().toString());
-        registrationToken.setNewEmployee(newEmployee);
+        registrationToken.setEmail(email);
+        //registrationToken.setNewEmployee(newEmployee);
         registrationToken.setIssuedByUser(issuedByUser);
 
         OffsetDateTime offsetDateTime = OffsetDateTime.now().plusDays(7);
@@ -127,6 +125,13 @@ public class UserService {
 
         registrationToken.setExpirationDate(expirationDate);
         registrationTokenRepository.save(registrationToken);
+    }
+    public void checkToken(String email, String token) throws TokenNotFoundException, TokenExpiredException {
+        RegistrationToken registrationToken = registrationTokenRepository.findByEmailAndToken(email, token).orElseThrow(() -> new TokenNotFoundException("Token Not Found."));
+        Date expirationDate = registrationToken.getExpirationDate();
+        if(expirationDate.before(new Date())) {
+            throw new TokenExpiredException("Token has expired.");
+        }
     }
 
 }
