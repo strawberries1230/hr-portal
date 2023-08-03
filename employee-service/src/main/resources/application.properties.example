@@ -1,0 +1,3 @@
+spring.application.name=EMPLOYEE-SERVICE
+server.port=8084
+spring.data.mongodb.uri=mongodb+srv://<username>:<password>@hr-project.cskokyy.mongodb.net/<dbname>?retryWrites=true&w=majority
