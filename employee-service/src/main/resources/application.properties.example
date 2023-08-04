@@ -1,3 +1,9 @@
 spring.application.name=EMPLOYEE-SERVICE
 server.port=8084
 spring.data.mongodb.uri=mongodb+srv://<username>:<password>@hr-project.cskokyy.mongodb.net/<dbname>?retryWrites=true&w=majority
+cloud.aws.credentials.accessKey=AccessKey
+cloud.aws.credentials.secretKey=SecretKey
+cloud.aws.region.static=region
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+app.s3.bucket=********

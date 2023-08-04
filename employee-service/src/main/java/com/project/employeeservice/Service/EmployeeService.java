@@ -40,7 +40,31 @@ public class EmployeeService {
             employee.setVisaStatus(employeeDTO.getVisaStatus());
         }
         employeeRepository.save(employee);
-
     }
+//    public void editEmployee(EmployeeDTO employeeDTO) {
+//        Long employeeId = employeeDTO.getId();
+//        Employee employee = employeeRepository.findById(employeeId).orElse(null);
+//        if (employee == null) {
+//            // 处理找不到员工的情况，比如抛出异常或返回错误信息
+//            return;
+//        }
+//
+//        if (employeeDTO.getFirstName() != null) {
+//            employee.setFirstName(employeeDTO.getFirstName());
+//        }
+//
+//        if (employeeDTO.getLastName() != null) {
+//            employee.setLastName(employeeDTO.getLastName());
+//        }
+//
+//        if (employeeDTO.getMiddleName() != null) {
+//            employee.setMiddleName(employeeDTO.getMiddleName());
+//        }
+//
+//        // 添加其他要编辑的字段的逻辑
+//
+//        employeeRepository.save(employee);
+//    }
+
 
 }
