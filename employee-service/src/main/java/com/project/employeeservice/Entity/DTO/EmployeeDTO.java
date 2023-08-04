@@ -17,7 +17,6 @@ public class EmployeeDTO {
     private String lastName;
     private String middleName;
     private String preferredName;
-    private String profilePicture;
     private String ssn;
     private LocalDate dob;
     private String gender;
@@ -58,15 +57,6 @@ public class EmployeeDTO {
     public void setPreferredName(String preferredName) {
         this.preferredName = preferredName;
     }
-
-    public String getProfilePicture() {
-        return profilePicture;
-    }
-
-    public void setProfilePicture(String profilePicture) {
-        this.profilePicture = profilePicture;
-    }
-
     public String getSsn() {
         return ssn;
     }

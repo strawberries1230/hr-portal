@@ -13,7 +13,6 @@ import java.util.Date;
 public class Address {
     private String addressLine1;
     private String addressLine2;
-    private String street;
     private String city;
     private String state;
     private String zipcode;
@@ -35,13 +34,6 @@ public class Address {
         this.addressLine2 = addressLine2;
     }
 
-    public String getStreet() {
-        return street;
-    }
-
-    public void setStreet(String street) {
-        this.street = street;
-    }
 
     public String getCity() {
         return city;

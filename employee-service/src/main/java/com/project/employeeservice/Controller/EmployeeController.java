@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("api/employees")
@@ -26,30 +27,10 @@ public class EmployeeController {
     }
 
     @PostMapping("/create")
-    public Employee createUser(@RequestBody EmployeeDTO employeeDTO) {
-        Employee employee = new Employee();
-        employee.setFirstName(employeeDTO.getFirstName());
-        employee.setLastName(employeeDTO.getLastName());
-        employee.setMiddleName(employeeDTO.getMiddleName());
-        employee.setPreferredName(employeeDTO.getPreferredName());
-        employee.setProfilePicture(employeeDTO.getProfilePicture());
-        employee.setSsn(employeeDTO.getSsn());
-        employee.setDob(employeeDTO.getDob());
-        employee.setGender(employeeDTO.getGender());
-        employee.setAddress(employeeDTO.getAddress());
-        employee.setContactInfo(employeeDTO.getContactInfo());
-        employee.setDriverLicense(employeeDTO.getDriverLicense());
-        employee.setVisaStatus(employeeDTO.getVisaStatus());
-        employee.setEmergencyContact(employeeDTO.getEmergencyContact());
-
-
-        return employeeService.createEmployee(employee);
+    public ResponseEntity<?> createUser(@RequestBody EmployeeDTO employeeDTO) {
+        employeeService.createEmployee(employeeDTO);
+        return ResponseEntity.ok("User info saved!!");
     }
-//    @PostMapping("/create")
-//    public String createUser(@RequestBody EmployeeDTO employeeDTO) {
-//
-//        return employeeDTO.getFirstName();
-//    }
 
 
 }
