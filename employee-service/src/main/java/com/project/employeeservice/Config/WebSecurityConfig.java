@@ -25,10 +25,10 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
+               // .authorizeHttpRequests(auth -> auth
                        // .antMatchers("/eureka/**").permitAll()
-                        .anyRequest().authenticated())
-                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                       // .anyRequest().authenticated())
+                //.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtRequestFilter, FilterSecurityInterceptor.class);
         return http.build();
     }

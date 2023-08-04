@@ -1,6 +1,8 @@
 package com.project.employeeservice.Auth;
 
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -10,6 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @Service
 public class JwtRequestFilter extends OncePerRequestFilter {
@@ -25,9 +28,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(token)) {
             try {
                 String username = jwtUtil.extractUsername(token);
+                Claims claims = jwtUtil.extractClaims(token);
 
                 if (username != null && !jwtUtil.isTokenExpired(token)) {
                     request.setAttribute("email", username);
+                    // 提取roles
+                    List<String> roles = claims.get("roles", List.class);
+                    // 将角色列表存储为请求属性
+                    request.setAttribute("roles", roles);
 
                 }
             } catch (Exception e) {

@@ -1,6 +1,7 @@
 package com.project.employeeservice.Controller;
 
 import com.project.employeeservice.Entity.DTO.EmployeeDTO;
+import com.project.employeeservice.Exception.AccessDeniedException;
 import com.project.employeeservice.Exception.FailToUploadException;
 import com.project.employeeservice.Exception.UserNotFoundException;
 import com.project.employeeservice.Service.EmployeeService;
@@ -15,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 
 @RestController
@@ -37,22 +39,30 @@ public class EmployeeController {
     }
 
 
-    @GetMapping()
-    public ResponseEntity<?> get() {
-        return new ResponseEntity<>("GOOOOOOOOOD!", HttpStatus.OK);
-    }
+//    @GetMapping()
+//    public ResponseEntity<?> get() {
+//
+//        return new ResponseEntity<>("GOOOOOOOOOD!", HttpStatus.OK);
+//    }
 
 
     @PostMapping("/create")
-    public ResponseEntity<?> createEmployee(HttpServletRequest request, @RequestBody EmployeeDTO employeeDTO) {
+    public ResponseEntity<?> createEmployee(HttpServletRequest request, @RequestBody EmployeeDTO employeeDTO) throws AccessDeniedException {
+        List<String> roles = (List<String>) request.getAttribute("roles");
+        if (!roles.contains("ROLE_EMPLOYEE")) {
+            throw new AccessDeniedException("Access denied");
+        }
         String email = (String) request.getAttribute("email");
         employeeService.createEmployee(email, employeeDTO);
         return ResponseEntity.ok("Employee info saved!!");
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadProfile(HttpServletRequest request, @RequestParam("file") MultipartFile file) throws UserNotFoundException, FailToUploadException {
-
+    public ResponseEntity<?> uploadProfile(HttpServletRequest request, @RequestParam("file") MultipartFile file) throws UserNotFoundException, FailToUploadException, AccessDeniedException {
+        List<String> roles = (List<String>) request.getAttribute("roles");
+        if (!roles.contains("ROLE_EMPLOYEE")) {
+            throw new AccessDeniedException("Access denied");
+        }
         String email = (String) request.getAttribute("email");
         String url = profileService.uploadProfile(email, file);
         return ResponseEntity.ok(url);
@@ -60,7 +70,11 @@ public class EmployeeController {
     }
 
     @PutMapping("/edit")
-    public void editEmployee(HttpServletRequest request, @RequestBody EmployeeDTO employeeDTO) throws UserNotFoundException {
+    public void editEmployee(HttpServletRequest request, @RequestBody EmployeeDTO employeeDTO) throws UserNotFoundException, AccessDeniedException {
+        List<String> roles = (List<String>) request.getAttribute("roles");
+        if (!roles.contains("ROLE_EMPLOYEE")) {
+            throw new AccessDeniedException("Access denied");
+        }
         String email = (String) request.getAttribute("email");
         employeeService.editEmployee(email, employeeDTO);
     }
