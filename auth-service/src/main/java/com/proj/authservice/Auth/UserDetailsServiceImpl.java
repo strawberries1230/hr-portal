@@ -34,7 +34,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
 
-        Optional<User> userOptional = userRepository.findByUsername(username);
+        Optional<User> userOptional = userRepository.findByEmail(username);
         User user = userOptional.orElseThrow(() -> new UsernameNotFoundException("User not found with name: " + username));
 
         List<Role> roles = user.getUserRoles().stream() // 获取User的所有UserRole
@@ -42,7 +42,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .collect(Collectors.toList()); // 将结果收集为一个List
 
 
-        return org.springframework.security.core.userdetails.User.builder().username(user.getUsername()).password(user.getPassword())
+        return org.springframework.security.core.userdetails.User.builder().username(user.getEmail()).password(user.getPassword())
                 .authorities(mapRolesToAuthorities(roles)).build();
     }
 }

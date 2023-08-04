@@ -100,7 +100,7 @@ public class UserService {
 
     public void generateRegistrationLink(String username, String email) throws UserNotFoundException {
 
-        User issuedByUser = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+        User issuedByUser = userRepository.findByEmail(username).orElseThrow(() -> new UserNotFoundException("User not found with email: " + username));
         //User newEmployee = userRepository.findByEmail(email).orElseThrow(() -> new EmailNotFoundException("User not found with email: " + email));
 
         RegistrationToken registrationToken = new RegistrationToken();
