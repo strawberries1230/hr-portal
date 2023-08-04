@@ -1,21 +1,17 @@
 package com.project.employeeservice.Service;
 
+import com.project.employeeservice.DAO.EmployeeRepository;
+import com.project.employeeservice.Entity.Document.Employee;
 import com.project.employeeservice.Exception.FailToUploadException;
+import com.project.employeeservice.Exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
-import javax.annotation.PostConstruct;
-import java.net.URL;
-import java.time.Duration;
 import java.util.UUID;
 
 @Service
@@ -27,10 +23,12 @@ public class ProfileService {
     @Value("${cloud.aws.region.static}")
     private String region;
 
-    public ProfileService(S3Client s3Client) {
+    private final EmployeeRepository employeeRepository;
+    public ProfileService(S3Client s3Client, EmployeeRepository employeeRepository) {
         this.s3Client = s3Client;
+        this.employeeRepository = employeeRepository;
     }
-    public String uploadProfile(MultipartFile file) throws FailToUploadException {
+    public String uploadProfile(String email, MultipartFile file) throws FailToUploadException, UserNotFoundException {
         try {
             // 生成唯一的文件名
             String filename = UUID.randomUUID() + "-" + file.getOriginalFilename();
@@ -44,8 +42,18 @@ public class ProfileService {
             PutObjectResponse response = s3Client.putObject(putObjectRequest,
                     RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
-            return getFileUrl(filename);
-        } catch (Exception e) {
+            Employee employee = employeeRepository.findByEmail(email);
+            if(employee == null) {
+                throw new UserNotFoundException("User not found with email: "+email);
+            }
+            String url = getFileUrl(filename);
+            employee.setProfilePicture(url);
+
+            return url;
+        }catch (UserNotFoundException e) {
+            throw new UserNotFoundException("User not found with email: "+email);
+        }
+        catch (Exception e) {
             throw new FailToUploadException("Failed to upload file");
         }
     }

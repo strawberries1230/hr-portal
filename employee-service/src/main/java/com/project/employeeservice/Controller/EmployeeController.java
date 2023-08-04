@@ -2,6 +2,7 @@ package com.project.employeeservice.Controller;
 
 import com.project.employeeservice.Entity.DTO.EmployeeDTO;
 import com.project.employeeservice.Exception.FailToUploadException;
+import com.project.employeeservice.Exception.UserNotFoundException;
 import com.project.employeeservice.Service.EmployeeService;
 import com.project.employeeservice.Service.ProfileService;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +19,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 
 @RestController
@@ -45,19 +47,25 @@ public class EmployeeController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createEmployee(@RequestBody EmployeeDTO employeeDTO) {
-        employeeService.createEmployee(employeeDTO);
+    public ResponseEntity<?> createEmployee(HttpServletRequest request, @RequestBody EmployeeDTO employeeDTO) {
+        String email = (String) request.getAttribute("email");
+        employeeService.createEmployee(email, employeeDTO);
         return ResponseEntity.ok("Employee info saved!!");
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadProfile(@RequestParam("file") MultipartFile file) {
-        try {
-            String url = profileService.uploadProfile(file);
-            return ResponseEntity.ok(url);
-        } catch (FailToUploadException e) {
-            return ResponseEntity.badRequest().body("fail to upload!!!");
-        }
+    public ResponseEntity<?> uploadProfile(HttpServletRequest request, @RequestParam("file") MultipartFile file) throws UserNotFoundException, FailToUploadException {
+
+        String email = (String) request.getAttribute("email");
+        String url = profileService.uploadProfile(email, file);
+        return ResponseEntity.ok(url);
+
+    }
+
+    @PutMapping("/edit")
+    public void editEmployee(HttpServletRequest request, @RequestBody EmployeeDTO employeeDTO) throws UserNotFoundException {
+        String email = (String) request.getAttribute("email");
+        employeeService.editEmployee(email, employeeDTO);
     }
 //    @GetMapping("/{imageName}")
 //    public ResponseEntity<InputStreamResource> getProfileImage(@PathVariable String imageName) throws FailToUploadException {

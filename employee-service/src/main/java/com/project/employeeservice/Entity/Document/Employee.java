@@ -33,6 +33,9 @@ public class Employee {
     private DriverLicense driverLicense;
     private List<String> personalDocuments = new ArrayList<>();
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     public Employee(String firstName, String lastName) {
     }
