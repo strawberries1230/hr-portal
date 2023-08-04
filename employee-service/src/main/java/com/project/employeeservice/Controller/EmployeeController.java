@@ -6,11 +6,8 @@ import com.project.employeeservice.Exception.FailToUploadException;
 import com.project.employeeservice.Exception.UserNotFoundException;
 import com.project.employeeservice.Service.EmployeeService;
 import com.project.employeeservice.Service.ProfileService;
-//import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -39,11 +36,11 @@ public class EmployeeController {
     }
 
 
-//    @GetMapping()
-//    public ResponseEntity<?> get() {
-//
-//        return new ResponseEntity<>("GOOOOOOOOOD!", HttpStatus.OK);
-//    }
+    @GetMapping()
+    public ResponseEntity<?> get() {
+
+        return new ResponseEntity<>("GOOOOOOOOOD!", HttpStatus.OK);
+    }
 
 
     @PostMapping("/create")
