@@ -5,22 +5,17 @@ import com.project.employeeservice.Exception.FailToUploadException;
 import com.project.employeeservice.Exception.UserNotFoundException;
 import com.project.employeeservice.Service.EmployeeService;
 import com.project.employeeservice.Service.ProfileService;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
+//import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+//import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayInputStream;
+
 
 @RestController
 @RequestMapping("api/employees")
@@ -41,10 +36,12 @@ public class EmployeeController {
 //        this.s3Client = s3Client1;
     }
 
+
     @GetMapping()
     public ResponseEntity<?> get() {
         return new ResponseEntity<>("GOOOOOOOOOD!", HttpStatus.OK);
     }
+
 
     @PostMapping("/create")
     public ResponseEntity<?> createEmployee(HttpServletRequest request, @RequestBody EmployeeDTO employeeDTO) {

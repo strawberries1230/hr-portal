@@ -7,3 +7,5 @@ cloud.aws.region.static=region
 spring.servlet.multipart.max-file-size=10MB
 spring.servlet.multipart.max-request-size=10MB
 app.s3.bucket=********
+jwt.secret=*******************************
+jwt.expiration=****
