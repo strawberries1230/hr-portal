@@ -38,12 +38,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     request.setAttribute("roles", roles);
 
                 }
+
             } catch (Exception e) {
                 // Token is invalid or expired
                 logger.error(e.getMessage());
                 // Return an error response
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write(e.getMessage());
+//                response.getWriter().write(e.getMessage());
+                response.getWriter().write("Credentials not valid");
 
                 return;
 
