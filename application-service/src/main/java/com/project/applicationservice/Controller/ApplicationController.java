@@ -85,7 +85,11 @@ public class ApplicationController {
     }
 
     @GetMapping("/download/{documentName}")
-    public ResponseEntity<InputStreamResource> getDocument(@PathVariable String documentName) throws NotFoundException {
+    public ResponseEntity<InputStreamResource> getDocument(HttpServletRequest request,@PathVariable String documentName) throws NotFoundException, AccessDeniedException {
+        List<String> roles = (List<String>) request.getAttribute("roles");
+        if (!roles.contains("ROLE_EMPLOYEE")) {
+            throw new AccessDeniedException("Access denied, you need employee access");
+        }
         try {
             // 创建下载请求
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
