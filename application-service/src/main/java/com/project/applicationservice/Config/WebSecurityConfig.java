@@ -1,18 +1,21 @@
 package com.project.applicationservice.Config;
 
+import com.project.applicationservice.Auth.JwtRequestFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
-    //private final JwtRequestFilter jwtRequestFilter;
+    private final JwtRequestFilter jwtRequestFilter;
 
-    public WebSecurityConfig() {
+    public WebSecurityConfig(JwtRequestFilter jwtRequestFilter) {
 
+        this.jwtRequestFilter = jwtRequestFilter;
     }
 
     @Bean
@@ -24,9 +27,10 @@ public class WebSecurityConfig {
 //                //.sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 //                .addFilterBefore(jwtRequestFilter, FilterSecurityInterceptor.class);
         //http.csrf().disable()
-                http.csrf(csrf -> csrf.disable())
-               .authorizeHttpRequests(auth -> auth
-                       .anyRequest().permitAll());
+//                http.csrf(csrf -> csrf.disable())
+//               .authorizeHttpRequests(auth -> auth
+//                       .anyRequest().permitAll());
+        http.csrf().disable().addFilterBefore(jwtRequestFilter, FilterSecurityInterceptor.class);
         return http.build();
     }
 

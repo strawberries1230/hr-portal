@@ -31,7 +31,7 @@ public class Employee {
     private VisaStatus visaStatus;
     private EmergencyContact emergencyContact;
     private DriverLicense driverLicense;
-    private List<String> personalDocuments = new ArrayList<>();
+//    private List<String> personalDocuments = new ArrayList<>();
 
     public void setEmail(String email) {
         this.email = email;
@@ -164,13 +164,13 @@ public class Employee {
         this.driverLicense = driverLicense;
     }
 
-    public List<String> getPersonalDocuments() {
-        return personalDocuments;
-    }
-
-    public void setPersonalDocuments(List<String> personalDocuments) {
-        this.personalDocuments = personalDocuments;
-    }
+//    public List<String> getPersonalDocuments() {
+//        return personalDocuments;
+//    }
+//
+//    public void setPersonalDocuments(List<String> personalDocuments) {
+//        this.personalDocuments = personalDocuments;
+//    }
 
     @Override
     public String toString() {
@@ -191,7 +191,7 @@ public class Employee {
                 ", visaStatus=" + visaStatus +
                 ", emergencyContact=" + emergencyContact +
                 ", driverLicense=" + driverLicense +
-                ", personalDocuments=" + personalDocuments +
+//                ", personalDocuments=" + personalDocuments +
                 '}';
     }
 }
