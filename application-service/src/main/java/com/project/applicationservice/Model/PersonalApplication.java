@@ -29,4 +29,52 @@ public class PersonalApplication {
     @OneToMany(mappedBy = "personalApplication", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIdentityReference(alwaysAsId = true)
     private Set<PersonalDocument> documents;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public LocalDate getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(LocalDate createDate) {
+        this.createDate = createDate;
+    }
+
+    public LocalDate getLastModificationDate() {
+        return lastModificationDate;
+    }
+
+    public void setLastModificationDate(LocalDate lastModificationDate) {
+        this.lastModificationDate = lastModificationDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public Set<PersonalDocument> getDocuments() {
+        return documents;
+    }
+
+    public void setDocuments(Set<PersonalDocument> documents) {
+        this.documents = documents;
+    }
 }

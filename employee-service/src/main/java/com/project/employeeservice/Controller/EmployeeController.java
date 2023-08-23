@@ -3,16 +3,26 @@ package com.project.employeeservice.Controller;
 import com.project.employeeservice.Entity.DTO.EmployeeDTO;
 import com.project.employeeservice.Exception.AccessDeniedException;
 import com.project.employeeservice.Exception.FailToUploadException;
+import com.project.employeeservice.Exception.UserAlreadyExistsException;
 import com.project.employeeservice.Exception.UserNotFoundException;
 import com.project.employeeservice.Service.EmployeeService;
 import com.project.employeeservice.Service.ProfileService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 
@@ -29,10 +39,10 @@ public class EmployeeController {
 //    private String region;
 
 
-    public EmployeeController(EmployeeService employeeService, S3Client s3Client, ProfileService profileService, S3Client s3Client1) {
+    public EmployeeController(EmployeeService employeeService,ProfileService profileService) {
         this.employeeService = employeeService;
         this.profileService = profileService;
-//        this.s3Client = s3Client1;
+//        this.s3Client = s3Client;
     }
 
 
@@ -44,7 +54,7 @@ public class EmployeeController {
 
 
     @PostMapping("/create")
-    public ResponseEntity<?> createEmployee(HttpServletRequest request, @RequestBody EmployeeDTO employeeDTO) throws AccessDeniedException {
+    public ResponseEntity<?> createEmployee(HttpServletRequest request, @RequestBody EmployeeDTO employeeDTO) throws AccessDeniedException, UserAlreadyExistsException {
         List<String> roles = (List<String>) request.getAttribute("roles");
         if (!roles.contains("ROLE_EMPLOYEE")) {
             throw new AccessDeniedException("Access denied");
@@ -75,6 +85,7 @@ public class EmployeeController {
         String email = (String) request.getAttribute("email");
         employeeService.editEmployee(email, employeeDTO);
     }
+    //Test if the image can be retrieved
 //    @GetMapping("/{imageName}")
 //    public ResponseEntity<InputStreamResource> getProfileImage(@PathVariable String imageName) throws FailToUploadException {
 //        try {

@@ -4,6 +4,7 @@ import com.project.employeeservice.DAO.EmployeeRepository;
 import com.project.employeeservice.Entity.DTO.EmployeeDTO;
 import com.project.employeeservice.Entity.Document.Employee;
 import com.project.employeeservice.Entity.Model.*;
+import com.project.employeeservice.Exception.UserAlreadyExistsException;
 import com.project.employeeservice.Exception.UserNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,10 @@ public class EmployeeService {
     public EmployeeService(EmployeeRepository employeeRepository) {
         this.employeeRepository = employeeRepository;
     }
-    public void createEmployee(String email, EmployeeDTO employeeDTO) {
+    public void createEmployee(String email, EmployeeDTO employeeDTO) throws UserAlreadyExistsException {
+        if(employeeRepository.findByEmail(email) != null) {
+            throw new UserAlreadyExistsException(String.format("User with email: %s already exists!", email));
+        }
 
         Employee employee = new Employee();
         employee.setFirstName(employeeDTO.getFirstName());

@@ -3,3 +3,4 @@
 * Service Registry: 8761
 * API Gateway: 9191
 * Employee Service: 8084
+* Application Service: 8085
