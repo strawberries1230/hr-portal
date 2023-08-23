@@ -5,6 +5,7 @@ import com.project.applicationservice.Exception.AlreadyExistsException;
 import com.project.applicationservice.Exception.FailToUploadException;
 import com.project.applicationservice.Exception.NotFoundException;
 import com.project.applicationservice.Model.PersonalApplication;
+import com.project.applicationservice.Model.PersonalDocument;
 import com.project.applicationservice.Service.ApplicationService;
 import com.project.applicationservice.Service.DocumentService;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/application")
@@ -55,12 +57,19 @@ public class ApplicationController {
             throw new AccessDeniedException("Access denied, you need employee access");
         }
         String email = (String) request.getAttribute("email");
-        if (applicationService.findByEmail(email)) {
+        if (applicationService.findByEmail(email).isPresent()) {
             throw new AlreadyExistsException(String.format("application already exists with email: %s", email));
         }
         applicationService.startApplication(email);
         return ResponseEntity.ok("You've started an application!");
     }
+
+//    @GetMapping("/{email}")
+//    ResponseEntity<?> getApplication(HttpServletRequest request, @PathVariable String email)  {
+//
+//        Optional<PersonalApplication> personalApplication = applicationService.findByEmail(email);
+//        return ResponseEntity.ok(personalApplication.get());
+//    }
 
     @PutMapping("/{email}")
     ResponseEntity<?> editApplication(HttpServletRequest request, @PathVariable String email, @RequestParam String status, @RequestParam String comment) throws AccessDeniedException, NotFoundException {
@@ -69,12 +78,20 @@ public class ApplicationController {
             throw new AccessDeniedException("Access denied, you need hr access");
         }
         PersonalApplication personalApplication = applicationService.editApplication(email, status, comment);
-
         return ResponseEntity.ok(personalApplication);
+    }
+    @PutMapping("/edit/{email}/{type}")
+    ResponseEntity<?> editDocument(HttpServletRequest request, @PathVariable String email, @PathVariable String type,@RequestParam String status, @RequestParam String comment) throws AccessDeniedException, NotFoundException {
+        List<String> roles = (List<String>) request.getAttribute("roles");
+        if (!roles.contains("ROLE_HR")) {
+            throw new AccessDeniedException("Access denied, you need hr access");
+        }
+        PersonalDocument personalDocument = documentService.editDocument(email, type,status, comment);
+        return ResponseEntity.ok(personalDocument);
     }
 
     @PostMapping("/upload-documents")
-    public ResponseEntity<?> uploadDocuments(HttpServletRequest request, @RequestParam("file") MultipartFile file, @RequestParam Boolean required, @RequestParam String type) throws AccessDeniedException, FailToUploadException {
+    public ResponseEntity<?> uploadDocuments(HttpServletRequest request, @RequestParam("file") MultipartFile file, @RequestParam Boolean required, @RequestParam String type) throws AccessDeniedException, FailToUploadException, NotFoundException {
         List<String> roles = (List<String>) request.getAttribute("roles");
         if (!roles.contains("ROLE_EMPLOYEE")) {
             throw new AccessDeniedException("Access denied, you need employee access");

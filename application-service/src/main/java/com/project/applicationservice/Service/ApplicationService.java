@@ -35,11 +35,7 @@ public class ApplicationService {
         personalApplication.setLastModificationDate(LocalDate.now());
         return applicationRepository.save(personalApplication);
     }
-    public boolean findByEmail(String email) {
-        Optional<PersonalApplication> personalApplicationOptional = applicationRepository.findByEmail(email);
-        if(!personalApplicationOptional.isEmpty()) {
-            return true;
-        }
-        return false;
+    public Optional<PersonalApplication> findByEmail(String email) {
+        return applicationRepository.findByEmail(email);
     }
 }

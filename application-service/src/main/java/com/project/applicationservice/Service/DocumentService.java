@@ -1,7 +1,10 @@
 package com.project.applicationservice.Service;
 
+import com.project.applicationservice.DAO.ApplicationRepository;
 import com.project.applicationservice.DAO.DocumentRepository;
 import com.project.applicationservice.Exception.FailToUploadException;
+import com.project.applicationservice.Exception.NotFoundException;
+import com.project.applicationservice.Model.PersonalApplication;
 import com.project.applicationservice.Model.PersonalDocument;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,17 +21,32 @@ import java.util.UUID;
 public class DocumentService {
     private final S3Client s3Client;
     private final DocumentRepository documentRepository;
+    private final ApplicationRepository applicationRepository;
 
     @Value("${app.s3.bucket}")
     private String bucketName;
     @Value("${cloud.aws.region.static}")
     private String region;
 
-    public DocumentService(S3Client s3Client, DocumentRepository documentRepository) {
+    public DocumentService(S3Client s3Client, DocumentRepository documentRepository, ApplicationRepository applicationRepository) {
         this.s3Client = s3Client;
         this.documentRepository = documentRepository;
+        this.applicationRepository = applicationRepository;
     }
-    public String uploadDocuments(String email, MultipartFile file, String type, Boolean isRequired) throws FailToUploadException {
+
+    public PersonalDocument editDocument(String email, String type, String status, String comment) throws NotFoundException {
+        Optional<PersonalDocument> personalDocumentOptional = documentRepository.findByEmailAndType(email, type);
+        if (personalDocumentOptional.isEmpty()) {
+            throw new NotFoundException(String.format("Document with email %s and type: %s is not found!", email, type));
+        }
+        PersonalDocument personalDocument = personalDocumentOptional.get();
+        personalDocument.setStatus(status);
+        personalDocument.setComment(comment);
+
+        return documentRepository.save(personalDocument);
+    }
+
+    public String uploadDocuments(String email, MultipartFile file, String type, Boolean isRequired) throws FailToUploadException, NotFoundException {
         try {
             // 生成唯一的文件名
             String filename = UUID.randomUUID() + "-" + file.getOriginalFilename();
@@ -46,7 +64,12 @@ public class DocumentService {
 
             Optional<PersonalDocument> personalDocumentOptional = documentRepository.findByEmailAndType(email, type);
             //create a document
-            if(personalDocumentOptional.isEmpty()) {
+            if (personalDocumentOptional.isEmpty()) {
+                Optional<PersonalApplication> personalApplicationOptional = applicationRepository.findByEmail(email);
+                if (personalApplicationOptional.isEmpty()) {
+                    throw new NotFoundException(String.format("Application not found with email: %s", email));
+                }
+                PersonalApplication personalApplication = personalApplicationOptional.get();
                 PersonalDocument personalDocument = new PersonalDocument();
                 personalDocument.setEmail(email);
                 personalDocument.setType(type);
@@ -54,6 +77,7 @@ public class DocumentService {
                 personalDocument.setPath(url);
                 personalDocument.setComment("");
                 personalDocument.setStatus("pending");
+                personalDocument.setPersonalApplication(personalApplication);
                 documentRepository.save(personalDocument);
             }
             //document exists
@@ -63,8 +87,9 @@ public class DocumentService {
                 documentRepository.save(personalDocument);
             }
             return url;
-        }
-        catch (Exception e) {
+        } catch (NotFoundException e) {
+            throw new NotFoundException(String.format("Application not found with email: %s", email));
+        } catch (Exception e) {
             throw new FailToUploadException("Failed to upload file");
         }
     }
