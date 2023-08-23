@@ -24,7 +24,7 @@ public class PersonalDocument {
     @Column(nullable = false)
     private boolean isRequired;
     private String path;
-    private String description;
+    private String comment;
     private String status;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -69,13 +69,6 @@ public class PersonalDocument {
         this.path = path;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 
     public String getStatus() {
         return status;
@@ -91,5 +84,13 @@ public class PersonalDocument {
 
     public void setPersonalApplication(PersonalApplication personalApplication) {
         this.personalApplication = personalApplication;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }
