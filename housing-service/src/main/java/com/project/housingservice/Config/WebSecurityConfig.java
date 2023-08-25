@@ -1,5 +1,6 @@
 package com.project.housingservice.Config;
 
+import com.project.housingservice.Auth.JwtRequestFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,12 +11,12 @@ import org.springframework.security.web.access.intercept.FilterSecurityIntercept
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
-//    private final JwtRequestFilter jwtRequestFilter;
-//
-//    public WebSecurityConfig(JwtRequestFilter jwtRequestFilter) {
-//
-//        this.jwtRequestFilter = jwtRequestFilter;
-//    }
+    private final JwtRequestFilter jwtRequestFilter;
+
+    public WebSecurityConfig(JwtRequestFilter jwtRequestFilter) {
+
+        this.jwtRequestFilter = jwtRequestFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -29,8 +30,7 @@ public class WebSecurityConfig {
 //                http.csrf(csrf -> csrf.disable())
 //               .authorizeHttpRequests(auth -> auth
 //                       .anyRequest().permitAll());
-        http.csrf().disable();
-        //.addFilterBefore(jwtRequestFilter, FilterSecurityInterceptor.class);
+        http.csrf().disable().addFilterBefore(jwtRequestFilter, FilterSecurityInterceptor.class);
         return http.build();
     }
 

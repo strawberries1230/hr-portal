@@ -28,6 +28,10 @@ public class House {
     @Column(nullable = false)
     private Integer numOfResidents;
 
+    public Long getId() {
+        return id;
+    }
+
     public Landlord getLandlord() {
         return landlord;
     }
