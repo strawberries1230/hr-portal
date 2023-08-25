@@ -76,4 +76,42 @@ public class HouseService {
         }
         return availableHouses;
     }
+    public boolean checkHouseAvailablity(Long houseId) throws NotFoundException {
+        Optional<House> houseOptional = houseRepository.findById(houseId);
+        if(houseOptional.isEmpty()) {
+            throw new NotFoundException(String.format("House not found with id %s",houseId));
+        }
+        House house = houseOptional.get();
+        if(house.getMaxOccupant() > house.getNumOfResidents()) return true;
+        return false;
+
+    }
+    public HouseDTO findHouse(Long houseId) throws NotFoundException {
+        Optional<House> houseOptional = houseRepository.findById(houseId);
+        if(houseOptional.isEmpty()) {
+            throw new NotFoundException(String.format("House not found with id %s",houseId));
+        }
+        House house = houseOptional.get();
+        HouseDTO houseDTO = new HouseDTO();
+        houseDTO.setAddress(house.getAddress());
+        houseDTO.setMaxOccupant(house.getMaxOccupant());
+        houseDTO.setNumOfResidents(house.getNumOfResidents());
+        houseDTO.setLandlordId(house.getLandlord().getId());
+        return houseDTO;
+    }
+    public void changeResidentsNum(Long houseId, Integer number, Boolean add) throws NotFoundException {
+        Optional<House> houseOptional = houseRepository.findById(houseId);
+        if(houseOptional.isEmpty()) {
+            throw new NotFoundException(String.format("House not found with id %s",houseId));
+        }
+        House house = houseOptional.get();
+        int currNum = house.getNumOfResidents();
+        if(add) {
+            house.setNumOfResidents(currNum + number);
+        }
+        else{
+            house.setNumOfResidents(currNum - number);
+        }
+        houseRepository.save(house);
+    }
 }

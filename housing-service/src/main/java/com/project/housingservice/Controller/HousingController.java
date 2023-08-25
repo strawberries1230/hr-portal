@@ -37,6 +37,15 @@ public class HousingController {
     }
 
     //HR edit house
+    @PutMapping("/edit/house/{id}")
+    public ResponseEntity<?> editeHouse(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId, @RequestBody HouseDTO houseDTO) throws AccessDeniedException, NotFoundException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
+            throw new AccessDeniedException("Access denied, you need hr access");
+        }
+        houseService.editHouse(houseId,houseDTO);
+        return ResponseEntity.ok(String.format("house with id: %s edited!!!", houseId));
+    }
     @DeleteMapping("/delete/house/{id}")
     public ResponseEntity<?> deleteHouse(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId) throws AccessDeniedException, NotFoundException {
         List<String> roleList = Arrays.asList(roles.split(","));
@@ -47,7 +56,7 @@ public class HousingController {
         return ResponseEntity.ok(String.format("house with id: %s deleted!!!", houseId));
     }
 
-    @GetMapping("/available")
+    @GetMapping("/available/all")
     public ResponseEntity<?> findAvaliableHouse(@RequestHeader("X-User-Roles") String roles) throws AccessDeniedException, NotFoundException {
         List<String> roleList = Arrays.asList(roles.split(","));
         if (!roleList.contains("ROLE_HR")) {
@@ -56,8 +65,34 @@ public class HousingController {
         //houseService.findAvaliableHouse();
         return ResponseEntity.ok(houseService.findAvaliableHouse());
     }
+    @GetMapping("/available/{id}")
+    public ResponseEntity<Boolean> checkAvailablity(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId) throws AccessDeniedException, NotFoundException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
+            throw new AccessDeniedException("Access denied, you need hr access");
+        }
+        boolean availability = houseService.checkHouseAvailablity(houseId);
+        return ResponseEntity.ok(availability);
+    }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<HouseDTO> findHouse(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId) throws AccessDeniedException, NotFoundException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
+            throw new AccessDeniedException("Access denied, you need hr access");
+        }
+        return ResponseEntity.ok(houseService.findHouse(houseId));
+    }
 
+    @PutMapping("/edit/residentnum/house/{id}")
+    public ResponseEntity<String> changeResidentsNum(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId, @RequestParam Integer num, @RequestParam Boolean add) throws AccessDeniedException, NotFoundException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
+            throw new AccessDeniedException("Access denied, you need hr access");
+        }
+        houseService.changeResidentsNum(houseId, num, add);
+        return ResponseEntity.ok(String.format("house with id: %s's resident number edited!!!", houseId));
+    }
 //    @GetMapping()
 //    public ResponseEntity<?> test() {
 //        return ResponseEntity.ok("ok!!!");

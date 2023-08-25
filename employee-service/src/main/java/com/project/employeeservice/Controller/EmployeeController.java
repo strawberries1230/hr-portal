@@ -1,28 +1,15 @@
 package com.project.employeeservice.Controller;
 
 import com.project.employeeservice.Entity.DTO.EmployeeDTO;
-import com.project.employeeservice.Exception.AccessDeniedException;
-import com.project.employeeservice.Exception.FailToUploadException;
-import com.project.employeeservice.Exception.UserAlreadyExistsException;
-import com.project.employeeservice.Exception.UserNotFoundException;
+import com.project.employeeservice.Exception.*;
+import com.project.employeeservice.Feign.HousingClient;
 import com.project.employeeservice.Service.EmployeeService;
 import com.project.employeeservice.Service.ProfileService;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.ResponseBytes;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,6 +20,7 @@ public class EmployeeController {
     private final EmployeeService employeeService;
     private final ProfileService profileService;
 
+
 //    private final S3Client s3Client;
 //    @Value("${app.s3.bucket}")
 //    private String bucketName;
@@ -40,10 +28,11 @@ public class EmployeeController {
 //    private String region;
 
 
-    public EmployeeController(EmployeeService employeeService,ProfileService profileService) {
+    public EmployeeController(EmployeeService employeeService, ProfileService profileService, HousingClient housingClient) {
         this.employeeService = employeeService;
         this.profileService = profileService;
 //        this.s3Client = s3Client;
+
     }
 
 
@@ -64,6 +53,7 @@ public class EmployeeController {
         return ResponseEntity.ok("Employee info saved!!");
     }
 
+
     @PostMapping("/upload")
     public ResponseEntity<?> uploadProfile(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email,@RequestParam("file") MultipartFile file) throws UserNotFoundException, FailToUploadException, AccessDeniedException {
         List<String> roleList = Arrays.asList(roles.split(","));
@@ -82,6 +72,18 @@ public class EmployeeController {
             throw new AccessDeniedException("Access denied");
         }
         employeeService.editEmployee(email, employeeDTO);
+    }
+
+    @PutMapping("/assign-house")
+    public ResponseEntity<?> assignHouse(@RequestHeader("X-User-Roles") String roles,@RequestParam("hid") Long houseId, @RequestParam("email") String email) throws UserNotFoundException, AccessDeniedException, FailToAssignHouseException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        System.out.println(roleList);
+        if (!roleList.contains("ROLE_HR")) {
+            throw new AccessDeniedException("Access denied, you need hr access");
+        }
+        employeeService.assignHouse(roles, houseId, email);
+        return ResponseEntity.ok(String.format("House with id %s is assigned to employee with email %s", houseId, email));
+
     }
     //Test if the image can be retrieved
 //    @GetMapping("/{imageName}")

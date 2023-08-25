@@ -26,6 +26,10 @@ public class Landlord {
     @JsonIdentityReference(alwaysAsId = true)
     private List<House> houses;
 
+    public Long getId() {
+        return id;
+    }
+
     public String getFirstName() {
         return firstName;
     }

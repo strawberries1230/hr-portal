@@ -22,6 +22,10 @@ public class JwtValidationFilter implements GlobalFilter {
     }
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        if(!exchange.getRequest().getHeaders().containsKey("Authorization")) {
+            // 无效或缺失的JWT，拒绝访问
+            return unauthorizedResponse(exchange);
+        }
 
         String jwtToken = exchange.getRequest().getHeaders().getFirst("Authorization");
         if (jwtToken == null && !jwtToken.startsWith("Bearer ")) {

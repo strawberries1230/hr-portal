@@ -19,6 +19,13 @@ public class GlobalExceptionHandler {
         body.put("timestamp", LocalDateTime.now());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(value = FailToAssignHouseException.class)
+    public ResponseEntity<?> handleFailToAssignHouseException(FailToAssignHouseException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        body.put("timestamp", LocalDateTime.now());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(value = FailToUploadException.class)
     public ResponseEntity<?> handleFailToUploadException(FailToUploadException ex) {
