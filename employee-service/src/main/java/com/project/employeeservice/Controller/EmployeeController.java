@@ -23,6 +23,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -54,35 +55,32 @@ public class EmployeeController {
 
 
     @PostMapping("/create")
-    public ResponseEntity<?> createEmployee(HttpServletRequest request, @RequestBody EmployeeDTO employeeDTO) throws AccessDeniedException, UserAlreadyExistsException {
-        List<String> roles = (List<String>) request.getAttribute("roles");
-        if (!roles.contains("ROLE_EMPLOYEE")) {
+    public ResponseEntity<?> createEmployee(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email, @RequestBody EmployeeDTO employeeDTO) throws AccessDeniedException, UserAlreadyExistsException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_EMPLOYEE")) {
             throw new AccessDeniedException("Access denied");
         }
-        String email = (String) request.getAttribute("email");
         employeeService.createEmployee(email, employeeDTO);
         return ResponseEntity.ok("Employee info saved!!");
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadProfile(HttpServletRequest request, @RequestParam("file") MultipartFile file) throws UserNotFoundException, FailToUploadException, AccessDeniedException {
-        List<String> roles = (List<String>) request.getAttribute("roles");
-        if (!roles.contains("ROLE_EMPLOYEE")) {
+    public ResponseEntity<?> uploadProfile(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email,@RequestParam("file") MultipartFile file) throws UserNotFoundException, FailToUploadException, AccessDeniedException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_EMPLOYEE")) {
             throw new AccessDeniedException("Access denied");
         }
-        String email = (String) request.getAttribute("email");
         String url = profileService.uploadProfile(email, file);
         return ResponseEntity.ok(url);
 
     }
 
     @PutMapping("/edit")
-    public void editEmployee(HttpServletRequest request, @RequestBody EmployeeDTO employeeDTO) throws UserNotFoundException, AccessDeniedException {
-        List<String> roles = (List<String>) request.getAttribute("roles");
-        if (!roles.contains("ROLE_EMPLOYEE")) {
+    public void editEmployee(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email,@RequestBody EmployeeDTO employeeDTO) throws UserNotFoundException, AccessDeniedException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_EMPLOYEE")) {
             throw new AccessDeniedException("Access denied");
         }
-        String email = (String) request.getAttribute("email");
         employeeService.editEmployee(email, employeeDTO);
     }
     //Test if the image can be retrieved

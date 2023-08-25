@@ -24,6 +24,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,12 +52,11 @@ public class ApplicationController {
 //    }
 
     @PostMapping("/create")
-    ResponseEntity<?> startApplication(HttpServletRequest request) throws AccessDeniedException, AlreadyExistsException {
-        List<String> roles = (List<String>) request.getAttribute("roles");
-        if (!roles.contains("ROLE_EMPLOYEE")) {
+    ResponseEntity<?> startApplication(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email) throws AccessDeniedException, AlreadyExistsException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_EMPLOYEE")) {
             throw new AccessDeniedException("Access denied, you need employee access");
         }
-        String email = (String) request.getAttribute("email");
         if (applicationService.findByEmail(email).isPresent()) {
             throw new AlreadyExistsException(String.format("application already exists with email: %s", email));
         }
@@ -72,18 +72,19 @@ public class ApplicationController {
 //    }
 
     @PutMapping("/{email}")
-    ResponseEntity<?> editApplication(HttpServletRequest request, @PathVariable String email, @RequestParam String status, @RequestParam String comment) throws AccessDeniedException, NotFoundException {
-        List<String> roles = (List<String>) request.getAttribute("roles");
-        if (!roles.contains("ROLE_HR")) {
+    ResponseEntity<?> editApplication(@RequestHeader("X-User-Roles") String roles, @PathVariable String email, @RequestParam String status, @RequestParam String comment) throws AccessDeniedException, NotFoundException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
             throw new AccessDeniedException("Access denied, you need hr access");
         }
         PersonalApplication personalApplication = applicationService.editApplication(email, status, comment);
         return ResponseEntity.ok(personalApplication);
     }
     @PutMapping("/edit/{email}/{type}")
-    ResponseEntity<?> editDocument(HttpServletRequest request, @PathVariable String email, @PathVariable String type,@RequestParam String status, @RequestParam String comment) throws AccessDeniedException, NotFoundException {
-        List<String> roles = (List<String>) request.getAttribute("roles");
-        if (!roles.contains("ROLE_HR")) {
+    ResponseEntity<?> editDocument(@RequestHeader("X-User-Roles") String roles,  @PathVariable String email, @PathVariable String type,@RequestParam String status, @RequestParam String comment) throws AccessDeniedException, NotFoundException {
+
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
             throw new AccessDeniedException("Access denied, you need hr access");
         }
         PersonalDocument personalDocument = documentService.editDocument(email, type,status, comment);
@@ -91,20 +92,21 @@ public class ApplicationController {
     }
 
     @PostMapping("/upload-documents")
-    public ResponseEntity<?> uploadDocuments(HttpServletRequest request, @RequestParam("file") MultipartFile file, @RequestParam Boolean required, @RequestParam String type) throws AccessDeniedException, FailToUploadException, NotFoundException {
-        List<String> roles = (List<String>) request.getAttribute("roles");
-        if (!roles.contains("ROLE_EMPLOYEE")) {
+    public ResponseEntity<?> uploadDocuments(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email, @RequestParam("file") MultipartFile file, @RequestParam Boolean required, @RequestParam String type) throws AccessDeniedException, FailToUploadException, NotFoundException {
+
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_EMPLOYEE")) {
             throw new AccessDeniedException("Access denied, you need employee access");
         }
-        String email = (String) request.getAttribute("email");
         String url = documentService.uploadDocuments(email, file, type, required);
         return ResponseEntity.ok(String.format("You uploaded to: %s", url));
     }
 
     @GetMapping("/download/{documentName}")
-    public ResponseEntity<InputStreamResource> getDocument(HttpServletRequest request,@PathVariable String documentName) throws NotFoundException, AccessDeniedException {
-        List<String> roles = (List<String>) request.getAttribute("roles");
-        if (!roles.contains("ROLE_EMPLOYEE")) {
+    public ResponseEntity<InputStreamResource> getDocument(@RequestHeader("X-User-Roles") String roles, @PathVariable String documentName) throws NotFoundException, AccessDeniedException {
+
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_EMPLOYEE")) {
             throw new AccessDeniedException("Access denied, you need employee access");
         }
         try {

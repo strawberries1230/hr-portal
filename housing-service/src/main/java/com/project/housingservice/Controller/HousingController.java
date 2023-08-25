@@ -11,28 +11,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
 @RequestMapping("api/housing")
 public class HousingController {
-
-    //    private final LandlordRepository landlordRepository;
-//    private final HouseRepository houseRepository;
-//    private final FacilityRepository facilityRepository;
     private final HouseService houseService;
 
     public HousingController(LandlordRepository landlordRepository, HouseRepository houseRepository, FacilityRepository facilityRepository, HouseService houseService) {
-//        this.landlordRepository = landlordRepository;
-//        this.houseRepository = houseRepository;
-//        this.facilityRepository = facilityRepository;
         this.houseService = houseService;
     }
+
     //HR add house
     @PostMapping("/create/house")
-    public ResponseEntity<?> createHouse(HttpServletRequest request, @RequestBody HouseDTO houseDTO) throws AccessDeniedException, NotFoundException {
-        List<String> roles = (List<String>) request.getAttribute("roles");
-        if (!roles.contains("ROLE_HR")) {
+    public ResponseEntity<?> createHouse(@RequestHeader("X-User-Roles") String roles, @RequestBody HouseDTO houseDTO) throws AccessDeniedException, NotFoundException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
             throw new AccessDeniedException("Access denied, you need hr access");
         }
         //String email = (String) request.getAttribute("email");
@@ -40,12 +35,12 @@ public class HousingController {
 
         return ResponseEntity.ok(String.format("house at %s saved!!!", houseDTO.getAddress()));
     }
-    //HR edit house
 
+    //HR edit house
     @DeleteMapping("/delete/house/{id}")
-    public ResponseEntity<?> deleteHouse(HttpServletRequest request, @PathVariable("id") Long houseId) throws AccessDeniedException, NotFoundException {
-        List<String> roles = (List<String>) request.getAttribute("roles");
-        if (!roles.contains("ROLE_HR")) {
+    public ResponseEntity<?> deleteHouse(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId) throws AccessDeniedException, NotFoundException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
             throw new AccessDeniedException("Access denied, you need hr access");
         }
         houseService.deleteHouse(houseId);
@@ -53,9 +48,9 @@ public class HousingController {
     }
 
     @GetMapping("/available")
-    public ResponseEntity<?> findAvaliableHouse(HttpServletRequest request) throws AccessDeniedException, NotFoundException {
-        List<String> roles = (List<String>) request.getAttribute("roles");
-        if (!roles.contains("ROLE_HR")) {
+    public ResponseEntity<?> findAvaliableHouse(@RequestHeader("X-User-Roles") String roles) throws AccessDeniedException, NotFoundException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
             throw new AccessDeniedException("Access denied, you need hr access");
         }
         //houseService.findAvaliableHouse();

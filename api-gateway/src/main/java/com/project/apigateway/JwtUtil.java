@@ -1,14 +1,13 @@
-package com.project.applicationservice.Auth;
+package com.project.apigateway;
 
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtUtil {
@@ -18,19 +17,16 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    public String extractToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
     public Claims extractClaims(String token) {
         return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
     }
     public String extractUsername(String token) {
         return extractClaims(token).getSubject();
     }
+    public List<String> extractRolesFromJwt(String token) {
+        return extractClaims(token).get("roles", List.class);
+    }
+
     public Date extractExpiration(String token) {
         return extractClaims(token).getExpiration();
     }
