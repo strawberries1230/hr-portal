@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Data
 public class FacilityReportDTO {
     private Long facilityId;
-    private String createBy;
     private String title;
     private String description;
 }

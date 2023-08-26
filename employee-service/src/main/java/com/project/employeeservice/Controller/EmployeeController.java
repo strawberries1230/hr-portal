@@ -66,12 +66,13 @@ public class EmployeeController {
     }
 
     @PutMapping("/edit")
-    public void editEmployee(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email,@RequestBody EmployeeDTO employeeDTO) throws UserNotFoundException, AccessDeniedException {
+    public ResponseEntity<?> editEmployee(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email,@RequestBody EmployeeDTO employeeDTO) throws UserNotFoundException, AccessDeniedException {
         List<String> roleList = Arrays.asList(roles.split(","));
         if (!roleList.contains("ROLE_EMPLOYEE")) {
             throw new AccessDeniedException("Access denied");
         }
         employeeService.editEmployee(email, employeeDTO);
+        return ResponseEntity.ok("Successfully edited the employee!");
     }
 
     @PutMapping("/assign-house")
@@ -84,6 +85,16 @@ public class EmployeeController {
         employeeService.assignHouse(roles, houseId, email);
         return ResponseEntity.ok(String.format("House with id %s is assigned to employee with email %s", houseId, email));
 
+    }
+    @GetMapping("/house-info")
+    public ResponseEntity<?> getHouseInfo(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email) throws AccessDeniedException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        System.out.println(roleList);
+        if (!roleList.contains("ROLE_EMPLOYEE")) {
+            throw new AccessDeniedException("Access denied, you need employee access");
+        }
+
+        return ResponseEntity.ok(employeeService.getHouseInfo(roles, email));
     }
     //Test if the image can be retrieved
 //    @GetMapping("/{imageName}")

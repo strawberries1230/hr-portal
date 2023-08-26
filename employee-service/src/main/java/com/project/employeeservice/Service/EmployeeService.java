@@ -2,6 +2,8 @@ package com.project.employeeservice.Service;
 
 import com.project.employeeservice.DAO.EmployeeRepository;
 import com.project.employeeservice.Entity.DTO.EmployeeDTO;
+import com.project.employeeservice.Entity.DTO.RoomInfoDTO;
+import com.project.employeeservice.Entity.DTO.RoommateDTO;
 import com.project.employeeservice.Entity.Document.Employee;
 import com.project.employeeservice.Entity.Model.*;
 import com.project.employeeservice.Exception.FailToAssignHouseException;
@@ -11,6 +13,8 @@ import com.project.employeeservice.Feign.HousingClient;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class EmployeeService {
@@ -21,8 +25,9 @@ public class EmployeeService {
         this.employeeRepository = employeeRepository;
         this.housingClient = housingClient;
     }
+
     public void createEmployee(String email, EmployeeDTO employeeDTO) throws UserAlreadyExistsException {
-        if(employeeRepository.findByEmail(email) != null) {
+        if (employeeRepository.findByEmail(email) != null) {
             throw new UserAlreadyExistsException(String.format("User with email: %s already exists!", email));
         }
 
@@ -41,38 +46,65 @@ public class EmployeeService {
         employee.setEmail(email);
 
         Address address = employeeDTO.getAddress();
-        if(address.getZipcode() != null) {
+        if (address.getZipcode() != null) {
             address.setLastModificationDate(LocalDateTime.now());
             employee.setAddress(address);
         }
         VisaStatus visaStatus = employeeDTO.getVisaStatus();
-        if(visaStatus.getVisaTitle() != null)  {
+        if (visaStatus.getVisaTitle() != null) {
             visaStatus.setLastModificationDate(LocalDateTime.now());
             employee.setVisaStatus(employeeDTO.getVisaStatus());
         }
         employeeRepository.save(employee);
     }
-    public void assignHouse(String headerValue,Long houseId, String employeeEmail) throws UserNotFoundException, FailToAssignHouseException {
-        if(employeeRepository.findByEmail(employeeEmail) == null) {
+
+    public void assignHouse(String headerValue, Long houseId, String employeeEmail) throws UserNotFoundException, FailToAssignHouseException {
+        if (employeeRepository.findByEmail(employeeEmail) == null) {
             throw new UserNotFoundException(String.format("User with email: %s not found!", employeeEmail));
         }
         Employee employee = employeeRepository.findByEmail(employeeEmail);
-        if(employee == null) {
-            throw new UserNotFoundException("User not found with email: "+ employeeEmail);
+        if (employee == null) {
+            throw new UserNotFoundException("User not found with email: " + employeeEmail);
         }
-        boolean availability = housingClient.checkAvailablity(headerValue,houseId).getBody();
-        if(!availability) {
-            throw new FailToAssignHouseException(String.format("House with id %s is not available",houseId));
+        boolean availability = housingClient.checkAvailablity(headerValue, houseId).getBody();
+        if (!availability) {
+            throw new FailToAssignHouseException(String.format("House with id %s is not available", houseId));
         }
         housingClient.changeResidentsNum(headerValue, houseId, 1, true);
         employee.setHouseId(String.valueOf(houseId));
         employeeRepository.save(employee);
 
     }
+
+    public List<RoommateDTO> findEmployeesByHouseId(String email,String houseId) {
+        List<Employee> employees = employeeRepository.findByHouseId(houseId);
+        List<RoommateDTO> roommateDTOList = new ArrayList<>();
+        employees.forEach(e -> {
+            if(!email.equals(e.getEmail())) {
+                RoommateDTO roommateDTO = new RoommateDTO();
+                roommateDTO.setFullName(String.format("%s %s", e.getFirstName(), e.getLastName()));
+                roommateDTO.setPhone(e.getContactInfo().getCellPhone());
+                roommateDTOList.add(roommateDTO);
+            }
+        });
+        return roommateDTOList;
+
+    }
+    public RoomInfoDTO getHouseInfo(String roles,String email) {
+        Employee employee = employeeRepository.findByEmail(email);
+        String houseId = employee.getHouseId();
+        List<RoommateDTO> roommateDTOList = findEmployeesByHouseId(email,houseId);
+        RoomInfoDTO roomInfoDTO = new RoomInfoDTO();
+        roomInfoDTO.setAddress(housingClient.getHouseName(roles, houseId).getBody());
+
+        roomInfoDTO.setRoommates(roommateDTOList);
+        return roomInfoDTO;
+    }
+
     public void editEmployee(String email, EmployeeDTO employeeDTO) throws UserNotFoundException {
         Employee employee = employeeRepository.findByEmail(email);
-        if(employee == null) {
-            throw new UserNotFoundException("User not found with email: "+email);
+        if (employee == null) {
+            throw new UserNotFoundException("User not found with email: " + email);
         }
 
         if (employeeDTO.getFirstName() != null) {
@@ -100,34 +132,34 @@ public class EmployeeService {
         }
         if (employeeDTO.getAddress() != null) {
             Address address = employeeDTO.getAddress();
-            if(!address.equals(employee.getAddress())) {
+            if (!address.equals(employee.getAddress())) {
                 address.setLastModificationDate(LocalDateTime.now());
                 employee.setAddress(address);
             }
         }
         if (employeeDTO.getContactInfo() != null) {
             ContactInfo contactInfo = employeeDTO.getContactInfo();
-            if(!contactInfo.equals(employee.getContactInfo())) {
+            if (!contactInfo.equals(employee.getContactInfo())) {
                 employee.setContactInfo(contactInfo);
             }
         }
         if (employeeDTO.getVisaStatus() != null) {
             VisaStatus visaStatus = employeeDTO.getVisaStatus();
-            if(!visaStatus.equals(employee.getVisaStatus())) {
+            if (!visaStatus.equals(employee.getVisaStatus())) {
                 visaStatus.setLastModificationDate(LocalDateTime.now());
                 employee.setVisaStatus(visaStatus);
             }
         }
         if (employeeDTO.getEmergencyContact() != null) {
             EmergencyContact emergencyContact = employeeDTO.getEmergencyContact();
-            if(!emergencyContact.equals(employee.getEmergencyContact())) {
+            if (!emergencyContact.equals(employee.getEmergencyContact())) {
                 employee.setEmergencyContact(emergencyContact);
             }
         }
 
         if (employeeDTO.getDriverLicense() != null) {
             DriverLicense driverLicense = employeeDTO.getDriverLicense();
-            if(!driverLicense.equals(employee.getDriverLicense())) {
+            if (!driverLicense.equals(employee.getDriverLicense())) {
                 employee.setDriverLicense(driverLicense);
             }
         }

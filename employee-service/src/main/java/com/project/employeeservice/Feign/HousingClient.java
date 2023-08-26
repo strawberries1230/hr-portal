@@ -16,4 +16,6 @@ public interface HousingClient {
     ResponseEntity<Boolean> checkAvailablity(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId);
     @RequestMapping(method = RequestMethod.PUT, value = "/api/housing/edit/residentnum/house/{id}")
     ResponseEntity<String> changeResidentsNum(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId, @RequestParam Integer num, @RequestParam Boolean add);
+    @RequestMapping(method = RequestMethod.GET, value = "/api/housing/house_name/{id}")
+    ResponseEntity<String> getHouseName(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") String houseId);
 }

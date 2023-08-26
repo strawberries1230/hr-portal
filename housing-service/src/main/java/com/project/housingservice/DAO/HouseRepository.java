@@ -12,4 +12,7 @@ public interface HouseRepository extends JpaRepository<House, Long> {
     Optional<House> findById(Long id);
     @Query("SELECT h FROM House h WHERE h.maxOccupant > h.numOfResidents")
     List<House> findHousesWithSpace();
+
+    @Query("SELECT SUM(h.numOfResidents) FROM House h")
+    Integer findTotalNumOfResidents();
 }

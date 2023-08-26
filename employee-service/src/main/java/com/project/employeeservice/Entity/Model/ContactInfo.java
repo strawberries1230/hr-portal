@@ -39,4 +39,5 @@ public class ContactInfo {
     public int hashCode() {
         return Objects.hash(cellPhone, workPhone);
     }
+
 }

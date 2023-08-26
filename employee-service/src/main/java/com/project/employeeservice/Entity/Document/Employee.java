@@ -22,6 +22,8 @@ public class Employee {
     private String preferredName;
     private String profilePicture;
     private String email;
+//    @Indexed(unique = true)
+
     private String ssn;
     private LocalDate dob;
     private String gender;
