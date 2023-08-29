@@ -5,8 +5,10 @@ import com.project.housingservice.DAO.HouseRepository;
 import com.project.housingservice.DAO.LandlordRepository;
 import com.project.housingservice.Exception.NotFoundException;
 import com.project.housingservice.Model.DTO.AvailableHouseDTO;
+import com.project.housingservice.Model.DTO.FacilitySummaryDTO;
 import com.project.housingservice.Model.DTO.HouseAndLandlordDTO;
 import com.project.housingservice.Model.DTO.HouseDTO;
+import com.project.housingservice.Model.Entity.Facility;
 import com.project.housingservice.Model.Entity.House;
 import com.project.housingservice.Model.Entity.Landlord;
 import org.springframework.stereotype.Service;
@@ -149,5 +151,30 @@ public class HouseService {
             house.setNumOfResidents(currNum - number);
         }
         houseRepository.save(house);
+    }
+
+    public FacilitySummaryDTO getHouseSummary(Long houseId) throws NotFoundException {
+        Optional<House> houseOptional = houseRepository.findById(houseId);
+        if(houseOptional.isEmpty()) {
+            throw new NotFoundException(String.format("House with id %s not found!", houseId));
+        }
+        House house = houseOptional.get();
+        List<Facility> facilities = house.getFacilities();
+        FacilitySummaryDTO facilitySummaryDTO = new FacilitySummaryDTO();
+        for(Facility facility: facilities) {
+            if(facility.getType().equals("Bed")) {
+                facilitySummaryDTO.setNumberofBeds(facility.getQuantity());
+            }
+            if(facility.getType().equals("Mattress")) {
+                facilitySummaryDTO.setNumberofMattresses(facility.getQuantity());
+            }
+            if(facility.getType().equals("Table")) {
+                facilitySummaryDTO.setNumberofTables(facility.getQuantity());
+            }
+            if(facility.getType().equals("Chair")) {
+                facilitySummaryDTO.setNumberofChairs(facility.getQuantity());
+            }
+        }
+        return facilitySummaryDTO;
     }
 }

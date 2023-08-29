@@ -1,9 +1,8 @@
 package com.project.employeeservice.Service;
 
 import com.project.employeeservice.DAO.EmployeeRepository;
-import com.project.employeeservice.Entity.DTO.EmployeeDTO;
-import com.project.employeeservice.Entity.DTO.RoomInfoDTO;
-import com.project.employeeservice.Entity.DTO.RoommateDTO;
+import com.project.employeeservice.Entity.DTO.*;
+import com.project.employeeservice.Entity.DTO.externalDTO.HouseResidentsInfoDTO;
 import com.project.employeeservice.Entity.Document.Employee;
 import com.project.employeeservice.Entity.Model.*;
 import com.project.employeeservice.Exception.FailToAssignHouseException;
@@ -12,7 +11,10 @@ import com.project.employeeservice.Exception.UserNotFoundException;
 import com.project.employeeservice.Feign.HousingClient;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,24 +78,52 @@ public class EmployeeService {
 
     }
 
-    public List<RoommateDTO> findEmployeesByHouseId(String email,String houseId) {
+    public List<RoommateDTO> findEmployeesByHouseId(String email, String houseId) {
         List<Employee> employees = employeeRepository.findByHouseId(houseId);
         List<RoommateDTO> roommateDTOList = new ArrayList<>();
         employees.forEach(e -> {
-            if(!email.equals(e.getEmail())) {
+            if (!email.equals(e.getEmail())) {
                 RoommateDTO roommateDTO = new RoommateDTO();
                 roommateDTO.setFullName(String.format("%s %s", e.getFirstName(), e.getLastName()));
-                roommateDTO.setPhone(e.getContactInfo().getCellPhone());
+                if(e.getContactInfo() == null || e.getContactInfo().getCellPhone() == null) {
+                    roommateDTO.setPhone(null);
+                }
+                else {
+                    roommateDTO.setPhone(e.getContactInfo().getCellPhone());
+                }
+
                 roommateDTOList.add(roommateDTO);
             }
         });
         return roommateDTOList;
-
     }
-    public RoomInfoDTO getHouseInfo(String roles,String email) {
+
+    public HouseResidentsInfoDTO findTotalResidentsByHouseId(String houseId) {
+        HouseResidentsInfoDTO houseResidentsInfoDTO = new HouseResidentsInfoDTO();
+        List<Employee> residents = employeeRepository.findByHouseId(houseId);
+        List<ResidentDTO> totalResidents = new ArrayList<>();
+        residents.forEach(e -> {
+            ResidentDTO residentDTO = new ResidentDTO();
+            residentDTO.setFullName(String.format("%s %s", e.getFirstName(), e.getLastName()));
+            if(e.getContactInfo() == null || e.getContactInfo().getCellPhone() == null) {
+                residentDTO.setPhone(null);
+            }
+            else {
+                residentDTO.setPhone(e.getContactInfo().getCellPhone());
+            }
+            residentDTO.setEmail(e.getEmail());
+            totalResidents.add(residentDTO);
+
+        });
+        houseResidentsInfoDTO.setResidents(totalResidents);
+        houseResidentsInfoDTO.setNumOfResidents(totalResidents.size());
+        return houseResidentsInfoDTO;
+    }
+
+    public RoomInfoDTO getHouseInfo(String roles, String email) {
         Employee employee = employeeRepository.findByEmail(email);
         String houseId = employee.getHouseId();
-        List<RoommateDTO> roommateDTOList = findEmployeesByHouseId(email,houseId);
+        List<RoommateDTO> roommateDTOList = findEmployeesByHouseId(email, houseId);
         RoomInfoDTO roomInfoDTO = new RoomInfoDTO();
         roomInfoDTO.setAddress(housingClient.getHouseName(roles, houseId).getBody());
 
@@ -165,6 +195,23 @@ public class EmployeeService {
         }
 
         employeeRepository.save(employee);
+    }
+
+    public List<EmployeeResponseDTO> findActiveEmployees() {
+        List<Employee> employees = employeeRepository.findByVisaStatus_IsActiveFlag(true);
+        List<EmployeeResponseDTO> employeeResponseDTOS = new ArrayList<>();
+        for(Employee employee: employees) {
+            EmployeeResponseDTO employeeResponseDTO = new EmployeeResponseDTO();
+            employeeResponseDTO.setName(String.format("%s %s",employee.getFirstName(),employee.getLastName()));
+            employeeResponseDTO.setVisaTitle(employee.getVisaStatus().getVisaTitle());
+            employeeResponseDTO.setEndDate(employee.getVisaStatus().getEndDate());
+
+
+            Long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), employee.getVisaStatus().getEndDate());
+            employeeResponseDTO.setDaysLeft(daysLeft);
+            employeeResponseDTOS.add(employeeResponseDTO);
+        }
+        return employeeResponseDTOS;
     }
 
 

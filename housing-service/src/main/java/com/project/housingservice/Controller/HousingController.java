@@ -5,11 +5,12 @@ import com.project.housingservice.DAO.HouseRepository;
 import com.project.housingservice.DAO.LandlordRepository;
 import com.project.housingservice.Exception.AccessDeniedException;
 import com.project.housingservice.Exception.NotFoundException;
-import com.project.housingservice.Model.DTO.FacilityReportDTO;
-import com.project.housingservice.Model.DTO.HouseAndLandlordDTO;
-import com.project.housingservice.Model.DTO.HouseDTO;
+import com.project.housingservice.Model.DTO.*;
+import com.project.housingservice.Model.Entity.Facility;
+import com.project.housingservice.Model.Entity.House;
 import com.project.housingservice.Service.FacilityService;
 import com.project.housingservice.Service.HouseService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,9 +48,10 @@ public class HousingController {
         if (!roleList.contains("ROLE_HR")) {
             throw new AccessDeniedException("Access denied, you need hr access");
         }
-        houseService.editHouse(houseId,houseDTO);
+        houseService.editHouse(houseId, houseDTO);
         return ResponseEntity.ok(String.format("house with id: %s edited!!!", houseId));
     }
+
     @DeleteMapping("/delete/house/{id}")
     public ResponseEntity<?> deleteHouse(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId) throws AccessDeniedException, NotFoundException {
         List<String> roleList = Arrays.asList(roles.split(","));
@@ -69,6 +71,7 @@ public class HousingController {
         //houseService.findAvaliableHouse();
         return ResponseEntity.ok(houseService.findAvaliableHouse());
     }
+
     @GetMapping("/available/{id}")
     public ResponseEntity<Boolean> checkAvailablity(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId) throws AccessDeniedException, NotFoundException {
         List<String> roleList = Arrays.asList(roles.split(","));
@@ -98,13 +101,14 @@ public class HousingController {
     }
 
     @GetMapping("/total_residents")
-    public ResponseEntity<String> getTotalNumOfResidents(@RequestHeader("X-User-Roles") String roles) throws AccessDeniedException{
+    public ResponseEntity<String> getTotalNumOfResidents(@RequestHeader("X-User-Roles") String roles) throws AccessDeniedException {
         List<String> roleList = Arrays.asList(roles.split(","));
         if (!roleList.contains("ROLE_HR")) {
             throw new AccessDeniedException("Access denied, you need hr access");
         }
-        return ResponseEntity.ok(String.format("Total number of employee residents: %d",houseService.getTotalNumOfResidents()));
+        return ResponseEntity.ok(String.format("Total number of employee residents: %d", houseService.getTotalNumOfResidents()));
     }
+
     @GetMapping("/house_name/{id}")
     public ResponseEntity<String> getHouseName(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") String houseId) throws AccessDeniedException, NotFoundException {
         List<String> roleList = Arrays.asList(roles.split(","));
@@ -114,6 +118,7 @@ public class HousingController {
         Long house_id = Long.valueOf(houseId);
         return ResponseEntity.ok(houseService.getHouseName(house_id));
     }
+
     @PutMapping("/edit/residentnum/house/{id}")
     public ResponseEntity<String> changeResidentsNum(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId, @RequestParam Integer num, @RequestParam Boolean add) throws AccessDeniedException, NotFoundException {
         List<String> roleList = Arrays.asList(roles.split(","));
@@ -123,15 +128,82 @@ public class HousingController {
         houseService.changeResidentsNum(houseId, num, add);
         return ResponseEntity.ok(String.format("house with id: %s's resident number edited!!!", houseId));
     }
-   @PostMapping("/facility")
+
+    @PostMapping("/create/facility")
+    public ResponseEntity<?> createFacility(@RequestHeader("X-User-Roles") String roles, @RequestBody FacilityDTO facilityDTO) throws NotFoundException, AccessDeniedException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
+            throw new AccessDeniedException("Access denied, you need hr access");
+        }
+        facilityService.createFacility(facilityDTO);
+        return ResponseEntity.ok("facility saved!!!");
+    }
+    @GetMapping("/house-summary/{id}")
+    public ResponseEntity<?> getHouseSummary(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId) throws AccessDeniedException, NotFoundException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
+            throw new AccessDeniedException("Access denied, you need hr access");
+        }
+        FacilitySummaryDTO facilitySummaryDTO = houseService.getHouseSummary(houseId);
+        return ResponseEntity.ok(facilitySummaryDTO);
+    }
+    @GetMapping("/house-reports/{id}")
+    public ResponseEntity<?> viewHouseRelatedReports(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId, @RequestParam int page, @RequestParam int size) throws AccessDeniedException, NotFoundException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
+            throw new AccessDeniedException("Access denied, you need hr access");
+        }
+        Page<FacilityReportResponseDTO> facilityReportResponseDTOList = facilityService.viewHouseRelatedReports(houseId, page, size);
+        return ResponseEntity.ok(facilityReportResponseDTOList.getContent());
+    }
+
+        @PostMapping("/facility")
     public ResponseEntity<?> createFacilityReport(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email, @RequestBody FacilityReportDTO facilityReportDTO) throws AccessDeniedException, NotFoundException {
-       List<String> roleList = Arrays.asList(roles.split(","));
-       if (!roleList.contains("ROLE_EMPLOYEE")) {
-           throw new AccessDeniedException("Access denied, you need employee access");
-       }
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_EMPLOYEE")) {
+            throw new AccessDeniedException("Access denied, you need employee access");
+        }
         facilityService.createFacilityReport(email, facilityReportDTO);
-       return ResponseEntity.ok("successfully created report!!");
-   }
+        return ResponseEntity.ok("successfully created report!!");
+    }
+
+    @PostMapping("/facility-report-comment")
+    public ResponseEntity<?> createFacilityReportComment(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email, @RequestBody FacilityReportCommentRequestDTO facilityReportCommentRequestDTO) throws AccessDeniedException, NotFoundException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (roleList.isEmpty()) {
+            throw new AccessDeniedException("Access denied, you need access");
+        }
+        facilityService.createFacilityReportComment(email, facilityReportCommentRequestDTO);
+        return ResponseEntity.ok("successfully created comment!!");
+    }
+
+    @GetMapping("/report/all")
+    public ResponseEntity<List<FacilityReportResponseDTO>> viewAlleports(@RequestHeader("X-User-Roles") String roles) throws AccessDeniedException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
+            throw new AccessDeniedException("Access denied, you need hr access");
+        }
+        return ResponseEntity.ok(facilityService.viewAlleports());
+    }
+
+    @GetMapping("/report")
+    public ResponseEntity<List<FacilityReportResponseDTO>> viewReportsByAuthor(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email) throws AccessDeniedException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_EMPLOYEE")) {
+            throw new AccessDeniedException("Access denied, you need employee access");
+        }
+        return ResponseEntity.ok(facilityService.viewReportsByAuthor(email));
+    }
+
+    @PutMapping("/edit/comment")
+    public ResponseEntity<?> editComment(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email, @RequestBody EditCommentDTO editCommentDTO) throws AccessDeniedException, NotFoundException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_EMPLOYEE")) {
+            throw new AccessDeniedException("Access denied, you need employee access");
+        }
+        facilityService.editComment(email, editCommentDTO);
+        return ResponseEntity.ok("successfully edited the comment!!!");
+    }
 //    @GetMapping()
 //    public ResponseEntity<?> test() {
 //        return ResponseEntity.ok("ok!!!");
@@ -164,17 +236,7 @@ public class HousingController {
 //
 //            return ResponseEntity.ok("get landlord");
 //        }
-//    @PostMapping("/create/facility")
-//    public ResponseEntity<?> createFacility(@RequestBody FacilityDTO facilityDTO) {
-//        House house = houseRepository.findById(facilityDTO.getHouseId()).get();
-//        Facility facility = new Facility();
-//        facility.setHouse(house);
-//        facility.setDescription(facilityDTO.getDescription());
-//        facility.setType(facilityDTO.getType());
-//        facility.setQuantity(facilityDTO.getQuantity());
-//        facilityRepository.save(facility);
-//        return ResponseEntity.ok("facility saved!!!");
-//    }
+
 //    @PostMapping("/create/report")
 //    ResponseEntity<?> createReport(HttpServletRequest request, @RequestBody FacilityReportDTO facilityReportDTO) {
 //        List<String> roles = (List<String>) request.getAttribute("roles");

@@ -1,6 +1,8 @@
 package com.project.employeeservice.Controller;
 
 import com.project.employeeservice.Entity.DTO.EmployeeDTO;
+import com.project.employeeservice.Entity.DTO.EmployeeResponseDTO;
+import com.project.employeeservice.Entity.DTO.externalDTO.HouseResidentsInfoDTO;
 import com.project.employeeservice.Exception.*;
 import com.project.employeeservice.Feign.HousingClient;
 import com.project.employeeservice.Service.EmployeeService;
@@ -86,15 +88,33 @@ public class EmployeeController {
         return ResponseEntity.ok(String.format("House with id %s is assigned to employee with email %s", houseId, email));
 
     }
+    @GetMapping("/active")
+    public ResponseEntity<?> findActiveEmployees(@RequestHeader("X-User-Roles") String roles) throws AccessDeniedException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        //System.out.println(roleList);
+        if (!roleList.contains("ROLE_HR")) {
+            throw new AccessDeniedException("Access denied, you need hr access");
+        }
+        List<EmployeeResponseDTO> employeeResponseDTOS = employeeService.findActiveEmployees();
+        return ResponseEntity.ok(employeeResponseDTOS);
+    }
     @GetMapping("/house-info")
     public ResponseEntity<?> getHouseInfo(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email) throws AccessDeniedException {
         List<String> roleList = Arrays.asList(roles.split(","));
-        System.out.println(roleList);
         if (!roleList.contains("ROLE_EMPLOYEE")) {
             throw new AccessDeniedException("Access denied, you need employee access");
         }
 
         return ResponseEntity.ok(employeeService.getHouseInfo(roles, email));
+    }
+    @GetMapping("/house-residents/{id}")
+    public ResponseEntity<?> findTotalResidentsByHouseId (@RequestHeader("X-User-Roles") String roles,@PathVariable("id") String houseId) throws AccessDeniedException {
+        List<String> roleList = Arrays.asList(roles.split(","));
+        if (!roleList.contains("ROLE_HR")) {
+            throw new AccessDeniedException("Access denied, you need hr access");
+        }
+        HouseResidentsInfoDTO houseResidentsInfoDTO = employeeService.findTotalResidentsByHouseId(houseId);
+        return ResponseEntity.ok(houseResidentsInfoDTO);
     }
     //Test if the image can be retrieved
 //    @GetMapping("/{imageName}")

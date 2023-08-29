@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "House")
@@ -27,6 +28,17 @@ public class House {
     private Integer maxOccupant;
     @Column(nullable = false)
     private Integer numOfResidents;
+
+    @OneToMany(mappedBy = "house", fetch = FetchType.EAGER)
+    private List<Facility> facilities;
+
+    public List<Facility> getFacilities() {
+        return facilities;
+    }
+
+    public void setFacilities(List<Facility> facilities) {
+        this.facilities = facilities;
+    }
 
     public Long getId() {
         return id;

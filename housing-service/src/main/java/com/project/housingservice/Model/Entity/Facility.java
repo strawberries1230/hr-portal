@@ -23,6 +23,10 @@ public class Facility {
     private String description;
     private Integer quantity;
 
+    public Long getId() {
+        return id;
+    }
+
     public House getHouse() {
         return house;
     }
