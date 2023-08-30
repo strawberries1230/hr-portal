@@ -59,7 +59,6 @@ public class ApplicationService {
                     .setHeader(KafkaHeaders.TOPIC, topic.name())
                     .build();
             kafkaTemplate.send(message);
-//            kafkaTemplate.send("email_topic", emailMessage);
         }
         return applicationRepository.save(personalApplication);
     }

@@ -29,7 +29,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getRoleName()))
                 .collect(Collectors.toList());
     }
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
@@ -37,10 +36,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         Optional<User> userOptional = userRepository.findByEmail(username);
         User user = userOptional.orElseThrow(() -> new UsernameNotFoundException("User not found with name: " + username));
 
-        List<Role> roles = user.getUserRoles().stream() // 获取User的所有UserRole
-                .map(UserRole -> UserRole.getRole()) // 对每个UserRole，获取其Role
-                .collect(Collectors.toList()); // 将结果收集为一个List
-
+        List<Role> roles = user.getUserRoles().stream()
+                .map(UserRole -> UserRole.getRole())
+                .collect(Collectors.toList());
 
         return org.springframework.security.core.userdetails.User.builder().username(user.getEmail()).password(user.getPassword())
                 .authorities(mapRolesToAuthorities(roles)).build();

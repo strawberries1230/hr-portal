@@ -22,26 +22,10 @@ public class EmployeeController {
     private final EmployeeService employeeService;
     private final ProfileService profileService;
 
-
-//    private final S3Client s3Client;
-//    @Value("${app.s3.bucket}")
-//    private String bucketName;
-//    @Value("${cloud.aws.region.static}")
-//    private String region;
-
-
     public EmployeeController(EmployeeService employeeService, ProfileService profileService, HousingClient housingClient) {
         this.employeeService = employeeService;
         this.profileService = profileService;
-//        this.s3Client = s3Client;
 
-    }
-
-
-    @GetMapping()
-    public ResponseEntity<?> get() {
-
-        return new ResponseEntity<>("GOOOOOOOOOD!", HttpStatus.OK);
     }
 
 
@@ -57,7 +41,7 @@ public class EmployeeController {
 
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadProfile(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email,@RequestParam("file") MultipartFile file) throws UserNotFoundException, FailToUploadException, AccessDeniedException {
+    public ResponseEntity<?> uploadProfile(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email, @RequestParam("file") MultipartFile file) throws UserNotFoundException, FailToUploadException, AccessDeniedException {
         List<String> roleList = Arrays.asList(roles.split(","));
         if (!roleList.contains("ROLE_EMPLOYEE")) {
             throw new AccessDeniedException("Access denied");
@@ -68,7 +52,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/edit")
-    public ResponseEntity<?> editEmployee(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email,@RequestBody EmployeeDTO employeeDTO) throws UserNotFoundException, AccessDeniedException {
+    public ResponseEntity<?> editEmployee(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email, @RequestBody EmployeeDTO employeeDTO) throws UserNotFoundException, AccessDeniedException {
         List<String> roleList = Arrays.asList(roles.split(","));
         if (!roleList.contains("ROLE_EMPLOYEE")) {
             throw new AccessDeniedException("Access denied");
@@ -78,7 +62,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/assign-house")
-    public ResponseEntity<?> assignHouse(@RequestHeader("X-User-Roles") String roles,@RequestParam("hid") Long houseId, @RequestParam("email") String email) throws UserNotFoundException, AccessDeniedException, FailToAssignHouseException {
+    public ResponseEntity<?> assignHouse(@RequestHeader("X-User-Roles") String roles, @RequestParam("hid") Long houseId, @RequestParam("email") String email) throws UserNotFoundException, AccessDeniedException, FailToAssignHouseException {
         List<String> roleList = Arrays.asList(roles.split(","));
         System.out.println(roleList);
         if (!roleList.contains("ROLE_HR")) {
@@ -88,6 +72,7 @@ public class EmployeeController {
         return ResponseEntity.ok(String.format("House with id %s is assigned to employee with email %s", houseId, email));
 
     }
+
     @GetMapping("/active")
     public ResponseEntity<?> findActiveEmployees(@RequestHeader("X-User-Roles") String roles) throws AccessDeniedException {
         List<String> roleList = Arrays.asList(roles.split(","));
@@ -98,6 +83,7 @@ public class EmployeeController {
         List<EmployeeResponseDTO> employeeResponseDTOS = employeeService.findActiveEmployees();
         return ResponseEntity.ok(employeeResponseDTOS);
     }
+
     @GetMapping("/house-info")
     public ResponseEntity<?> getHouseInfo(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email) throws AccessDeniedException {
         List<String> roleList = Arrays.asList(roles.split(","));
@@ -107,8 +93,9 @@ public class EmployeeController {
 
         return ResponseEntity.ok(employeeService.getHouseInfo(roles, email));
     }
+
     @GetMapping("/house-residents/{id}")
-    public ResponseEntity<?> findTotalResidentsByHouseId (@RequestHeader("X-User-Roles") String roles,@PathVariable("id") String houseId) throws AccessDeniedException {
+    public ResponseEntity<?> findTotalResidentsByHouseId(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") String houseId) throws AccessDeniedException {
         List<String> roleList = Arrays.asList(roles.split(","));
         if (!roleList.contains("ROLE_HR")) {
             throw new AccessDeniedException("Access denied, you need hr access");

@@ -31,7 +31,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(token)) {
             try {
                 String username = jwtUtil.extractUsername(token);
-                //System.out.println("Username: " + username);
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     try {
                         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -44,17 +43,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                         }
                     } catch (UsernameNotFoundException e) {
                         // Log the error
-
                         logger.error("User not found: " + username, e);
                         // Return an error response
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.getWriter().write("Invalid credentials");
-
                         return;
 
                     } catch (Exception e) {
                         // Log the error
-
                         logger.error(e.getMessage());
                         // Return an error response
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -69,6 +65,5 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
-
     }
 }

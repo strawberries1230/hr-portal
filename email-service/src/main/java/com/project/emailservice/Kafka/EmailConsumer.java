@@ -45,14 +45,13 @@ public class EmailConsumer {
                 .setClientSecrets(CLIENT_ID, CLIENT_SECRET)
                 .build()
                 .setRefreshToken(REFRESH_TOKEN);
-        // 检查令牌是否需要刷新
+        // check if token needs to be refreshed
         if (credential.getExpiresInSeconds() == null || credential.getExpiresInSeconds() <= 60) {
             boolean refreshed = credential.refreshToken();
             if (!refreshed) {
                 LOGGER.error("Failed to refresh the token.");
             }
         }
-        // 获取新凭证并创建 Gmail 服务
         Gmail service = new Gmail.Builder(GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance(), credential)
                 .setApplicationName("My email service")
                 .build();
@@ -68,8 +67,6 @@ public class EmailConsumer {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
     }
 
     private MimeMessage createEmail(String to, String subject, String bodyText) throws Exception {

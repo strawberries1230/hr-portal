@@ -9,8 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 
 @FeignClient(name = "HOUSING-SERVICE")
 public interface HousingClient {
-//    @RequestMapping(method = RequestMethod.PUT, value = "/api/housing/edit/house/{id}")
-//    ResponseEntity<?> editeHouse(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId, @RequestBody HouseDTO houseDTO);
 
     @RequestMapping(method = RequestMethod.GET, value = "/api/housing/available/{id}")
     ResponseEntity<Boolean> checkAvailablity(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId);

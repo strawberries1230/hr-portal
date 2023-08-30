@@ -35,13 +35,11 @@ public class HousingController {
         if (!roleList.contains("ROLE_HR")) {
             throw new AccessDeniedException("Access denied, you need hr access");
         }
-        //String email = (String) request.getAttribute("email");
         houseService.createHouse(houseDTO);
 
         return ResponseEntity.ok(String.format("house at %s saved!!!", houseDTO.getAddress()));
     }
 
-    //HR edit house
     @PutMapping("/edit/house/{id}")
     public ResponseEntity<?> editeHouse(@RequestHeader("X-User-Roles") String roles, @PathVariable("id") Long houseId, @RequestBody HouseDTO houseDTO) throws AccessDeniedException, NotFoundException {
         List<String> roleList = Arrays.asList(roles.split(","));
@@ -68,7 +66,6 @@ public class HousingController {
         if (!roleList.contains("ROLE_HR")) {
             throw new AccessDeniedException("Access denied, you need hr access");
         }
-        //houseService.findAvaliableHouse();
         return ResponseEntity.ok(houseService.findAvaliableHouse());
     }
 
@@ -204,10 +201,7 @@ public class HousingController {
         facilityService.editComment(email, editCommentDTO);
         return ResponseEntity.ok("successfully edited the comment!!!");
     }
-//    @GetMapping()
-//    public ResponseEntity<?> test() {
-//        return ResponseEntity.ok("ok!!!");
-//    }
+
 
     //    @PostMapping()
 //    public ResponseEntity<?> createLandlord(@RequestBody LandlordDTO landlordDTO) {

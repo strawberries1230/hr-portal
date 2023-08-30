@@ -30,15 +30,15 @@ public class ProfileService {
     }
     public String uploadProfile(String email, MultipartFile file) throws FailToUploadException, UserNotFoundException {
         try {
-            // 生成唯一的文件名
+
             String filename = UUID.randomUUID() + "-" + file.getOriginalFilename();
-            // 创建上传请求
+
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(filename)
                     .build();
 
-            // 从MultipartFile获取输入流，上传到S3
+
             PutObjectResponse response = s3Client.putObject(putObjectRequest,
                     RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
@@ -57,9 +57,6 @@ public class ProfileService {
             throw new FailToUploadException("Failed to upload file");
         }
     }
-
-
-
 
     private String getFileUrl(String filename) {
         return String.format("https://%s.s3.amazonaws.com/%s", bucketName, filename);

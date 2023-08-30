@@ -48,15 +48,15 @@ public class DocumentService {
 
     public String uploadDocuments(String email, MultipartFile file, String type, Boolean isRequired) throws FailToUploadException, NotFoundException {
         try {
-            // 生成唯一的文件名
+            // generate unique file name
             String filename = UUID.randomUUID() + "-" + file.getOriginalFilename();
-            // 创建上传请求
+            //  upload request
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(filename)
                     .build();
 
-            // 从MultipartFile获取输入流，上传到S3
+            // get input stream from MultipartFile, upload to S3
             PutObjectResponse response = s3Client.putObject(putObjectRequest,
                     RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
@@ -93,7 +93,6 @@ public class DocumentService {
             throw new FailToUploadException("Failed to upload file");
         }
     }
-
 
     private String getFileUrl(String filename) {
         return String.format("https://%s.s3.amazonaws.com/%s", bucketName, filename);

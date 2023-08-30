@@ -65,7 +65,6 @@ public class UserService {
 
     }
 
-
     public void registerUser(UserDTO userDTO) throws AlreadyExistsException {
         if (userRepository.existsByUsername(userDTO.getUsername())) {
             throw new AlreadyExistsException("Username already exists");
@@ -101,12 +100,10 @@ public class UserService {
     public void generateRegistrationLink(String username, String email) throws UserNotFoundException {
 
         User issuedByUser = userRepository.findByEmail(username).orElseThrow(() -> new UserNotFoundException("User not found with email: " + username));
-        //User newEmployee = userRepository.findByEmail(email).orElseThrow(() -> new EmailNotFoundException("User not found with email: " + email));
 
         RegistrationToken registrationToken = new RegistrationToken();
         registrationToken.setToken(UUID.randomUUID().toString());
         registrationToken.setEmail(email);
-        //registrationToken.setNewEmployee(newEmployee);
         registrationToken.setIssuedByUser(issuedByUser);
 
         OffsetDateTime offsetDateTime = OffsetDateTime.now().plusDays(7);

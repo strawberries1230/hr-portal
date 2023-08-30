@@ -25,5 +25,4 @@ public class S3Config {
                 .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
                 .build();
     }
-
 }

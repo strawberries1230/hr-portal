@@ -7,6 +7,7 @@ import com.proj.authservice.Model.Request.LoginRequest;
 import com.proj.authservice.Model.Request.LoginResponse;
 import com.proj.authservice.Service.UserService;
 import com.proj.authservice.Util.EmailValidator;
+
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,7 +26,6 @@ public class UserController {
         this.userService = userService;
 
     }
-
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestParam("token") String token, @Valid @RequestBody UserDTO userDTO, BindingResult bindingResult) throws AlreadyExistsException, FailtoRegisterException {
         if (bindingResult.hasErrors()) {

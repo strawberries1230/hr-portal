@@ -19,11 +19,9 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("api/application")
@@ -44,17 +42,12 @@ public class ApplicationController {
         this.s3Client = s3Client;
     }
 
-    //    @GetMapping()
-//    ResponseEntity<?> get() {
-//        return ResponseEntity.ok("you get it!");
-//    }
     @GetMapping("/oauth/callback")
     public String oauthCallback(@RequestParam("code") String code) {
-        // 在这里处理获取的授权代码
-        // 你可以将 code 用于获取访问令牌和刷新令牌
+        // get auth code
+        // use auth code to get access token and refresh token
         return "Authorization code received: " + code;
     }
-
 
     @PostMapping("/create")
     ResponseEntity<?> startApplication(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email) throws AccessDeniedException, AlreadyExistsException {
@@ -68,13 +61,6 @@ public class ApplicationController {
         applicationService.startApplication(email);
         return ResponseEntity.ok("You've started an application!");
     }
-
-//    @GetMapping("/{email}")
-//    ResponseEntity<?> getApplication(HttpServletRequest request, @PathVariable String email)  {
-//
-//        Optional<PersonalApplication> personalApplication = applicationService.findByEmail(email);
-//        return ResponseEntity.ok(personalApplication.get());
-//    }
 
     @PutMapping("/{email}")
     ResponseEntity<?> editApplication(@RequestHeader("X-User-Roles") String roles, @PathVariable String email, @RequestParam String status, @RequestParam String comment) throws AccessDeniedException, NotFoundException, DataFormatException {
@@ -116,20 +102,19 @@ public class ApplicationController {
             throw new AccessDeniedException("Access denied, you need employee access");
         }
         try {
-            // 创建下载请求
+            // download request
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(bucketName)
                     .key(documentName)
                     .build();
 
-            // 从S3下载图像
+            // download from s3
             ResponseBytes<GetObjectResponse> responseBytes = s3Client.getObjectAsBytes(getObjectRequest);
             byte[] imageData = responseBytes.asByteArray();
 
-            // 设置响应头
+            // set request header
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(getContentType(documentName))); // 根据图像类型设置正确的Content-Type
-            // 可根据需要设置其他响应头，例如缓存控制等
 
             return new ResponseEntity<>(new InputStreamResource(new ByteArrayInputStream(imageData)), headers, HttpStatus.OK);
         } catch (NoSuchKeyException e) {
@@ -143,9 +128,7 @@ public class ApplicationController {
         } else if (fileName.endsWith(".png")) {
             return "image/png";
         }
-        // 可以添加更多文件类型
-        return "application/octet-stream"; // 默认类型
+        // can add more types
+        return "application/octet-stream"; // default type
     }
-
-
 }
