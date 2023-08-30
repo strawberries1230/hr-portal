@@ -1,0 +1,14 @@
+spring.application.name=HOUSING-SERVICE
+server.port=8086
+
+spring.datasource.url=jdbc:mysql://<db identifier>:<port>/<db_name>?useSSL=true&requireSSL=true&enableCleartextPlugin=true
+spring.datasource.username=<iam user username>
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+
+jwt.secret=************
+jwt.expiration=****************
+
+spring.jpa.hibernate.ddl-auto=update
+spring.datasource.password=${GENERATED_TEMP_PASSWORD}
+#change local machine(non ec2) CLI generated password every 15 mins
+spring.jpa.show-sql=true
