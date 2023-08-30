@@ -1,9 +1,6 @@
 package com.project.applicationservice.Controller;
 
-import com.project.applicationservice.Exception.AccessDeniedException;
-import com.project.applicationservice.Exception.AlreadyExistsException;
-import com.project.applicationservice.Exception.FailToUploadException;
-import com.project.applicationservice.Exception.NotFoundException;
+import com.project.applicationservice.Exception.*;
 import com.project.applicationservice.Model.PersonalApplication;
 import com.project.applicationservice.Model.PersonalDocument;
 import com.project.applicationservice.Service.ApplicationService;
@@ -46,10 +43,18 @@ public class ApplicationController {
         this.documentService = documentService;
         this.s3Client = s3Client;
     }
-//    @GetMapping()
+
+    //    @GetMapping()
 //    ResponseEntity<?> get() {
 //        return ResponseEntity.ok("you get it!");
 //    }
+    @GetMapping("/oauth/callback")
+    public String oauthCallback(@RequestParam("code") String code) {
+        // 在这里处理获取的授权代码
+        // 你可以将 code 用于获取访问令牌和刷新令牌
+        return "Authorization code received: " + code;
+    }
+
 
     @PostMapping("/create")
     ResponseEntity<?> startApplication(@RequestHeader("X-User-Roles") String roles, @RequestHeader("X-User-Email") String email) throws AccessDeniedException, AlreadyExistsException {
@@ -72,7 +77,7 @@ public class ApplicationController {
 //    }
 
     @PutMapping("/{email}")
-    ResponseEntity<?> editApplication(@RequestHeader("X-User-Roles") String roles, @PathVariable String email, @RequestParam String status, @RequestParam String comment) throws AccessDeniedException, NotFoundException {
+    ResponseEntity<?> editApplication(@RequestHeader("X-User-Roles") String roles, @PathVariable String email, @RequestParam String status, @RequestParam String comment) throws AccessDeniedException, NotFoundException, DataFormatException {
         List<String> roleList = Arrays.asList(roles.split(","));
         if (!roleList.contains("ROLE_HR")) {
             throw new AccessDeniedException("Access denied, you need hr access");
@@ -80,14 +85,15 @@ public class ApplicationController {
         PersonalApplication personalApplication = applicationService.editApplication(email, status, comment);
         return ResponseEntity.ok(personalApplication);
     }
+
     @PutMapping("/edit/{email}/{type}")
-    ResponseEntity<?> editDocument(@RequestHeader("X-User-Roles") String roles,  @PathVariable String email, @PathVariable String type,@RequestParam String status, @RequestParam String comment) throws AccessDeniedException, NotFoundException {
+    ResponseEntity<?> editDocument(@RequestHeader("X-User-Roles") String roles, @PathVariable String email, @PathVariable String type, @RequestParam String status, @RequestParam String comment) throws AccessDeniedException, NotFoundException {
 
         List<String> roleList = Arrays.asList(roles.split(","));
         if (!roleList.contains("ROLE_HR")) {
             throw new AccessDeniedException("Access denied, you need hr access");
         }
-        PersonalDocument personalDocument = documentService.editDocument(email, type,status, comment);
+        PersonalDocument personalDocument = documentService.editDocument(email, type, status, comment);
         return ResponseEntity.ok(personalDocument);
     }
 
@@ -127,9 +133,10 @@ public class ApplicationController {
 
             return new ResponseEntity<>(new InputStreamResource(new ByteArrayInputStream(imageData)), headers, HttpStatus.OK);
         } catch (NoSuchKeyException e) {
-            throw new NotFoundException(String.format("Image not found with: %s",documentName));
+            throw new NotFoundException(String.format("Image not found with: %s", documentName));
         }
     }
+
     private String getContentType(String fileName) {
         if (fileName.endsWith(".pdf")) {
             return "application/pdf";
